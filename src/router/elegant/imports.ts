@@ -8,10 +8,12 @@ import type { LastLevelRouteKey, RouteLayout } from "@elegant-router/types";
 
 import BaseLayout from "@/layouts/base-layout/index.vue";
 import BlankLayout from "@/layouts/blank-layout/index.vue";
+import ParentLayout from "@/layouts/parent-layout/index.vue";
 
 export const layouts: Record<RouteLayout, RouteComponent | (() => Promise<RouteComponent>)> = {
   base: BaseLayout,
   blank: BlankLayout,
+  parent: ParentLayout,
 };
 
 export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<RouteComponent>)> = {
@@ -23,6 +25,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "social-callback": () => import("@/views/_builtin/social-callback/index.vue"),
   "user-center": () => import("@/views/_builtin/user-center/index.vue"),
   about: () => import("@/views/about/index.vue"),
+  "basic_platform-warehouse": () => import("@/views/basic/platform-warehouse/index.vue"),
   demo_demo: () => import("@/views/demo/demo/index.vue"),
   demo_tree: () => import("@/views/demo/tree/index.vue"),
   home: () => import("@/views/home/index.vue"),
@@ -44,4 +47,9 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   system_tenant: () => import("@/views/system/tenant/index.vue"),
   system_user: () => import("@/views/system/user/index.vue"),
   tool_gen: () => import("@/views/tool/gen/index.vue"),
+  "wms_devanning-order": () => import("@/views/wms/devanning-order/index.vue"),
+  wms_inventory_location: () => import("@/views/wms/inventory/location/index.vue"),
+  "wms_inventory_warehouse-area": () => import("@/views/wms/inventory/warehouse-area/index.vue"),
+  wms_warehouse_settings_location: () => import("@/views/wms/warehouse/settings/location/index.vue"),
+  "wms_warehouse_settings_warehouse-area": () => import("@/views/wms/warehouse/settings/warehouse-area/index.vue"),
 };

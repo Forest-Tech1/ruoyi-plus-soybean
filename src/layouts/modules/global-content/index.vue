@@ -49,7 +49,7 @@ function resetScroll() {
           v-if="appStore.reloadFlag"
           :key="tabStore.getTabIdByRoute(route)"
           :class="{ 'p-16px': showPadding, 'footer-var': footerVar }"
-          class="flex-grow bg-layout transition-300"
+          class="flex min-h-0 flex-1 flex-col bg-layout transition-300"
         />
       </KeepAlive>
     </Transition>

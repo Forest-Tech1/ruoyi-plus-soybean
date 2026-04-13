@@ -156,7 +156,7 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     } else if (!isLayout && !isParentLayout && !isBlankLayout) {
       route.component = parent ? `view.${route.name}` : `layout.base$view.${route.name}`;
     } else if (!isBlankLayout) {
-      route.component = isParentLayout ? undefined : 'layout.base';
+      route.component = isParentLayout ? 'layout.parent' : 'layout.base';
     }
 
     delete route.meta.link;

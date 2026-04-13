@@ -9,7 +9,7 @@ declare module "@elegant-router/types" {
   /**
    * route layout
    */
-  export type RouteLayout = "base" | "blank";
+  export type RouteLayout = "base" | "blank" | "parent";
 
   /**
    * route map
@@ -25,6 +25,8 @@ declare module "@elegant-router/types" {
     "404": "/404";
     "500": "/500";
     "about": "/about";
+    "basic": "/basic";
+    "basic_platform-warehouse": "/basic/platform-warehouse";
     "demo": "/demo";
     "demo_demo": "/demo/demo";
     "demo_tree": "/demo/tree";
@@ -54,6 +56,15 @@ declare module "@elegant-router/types" {
     "tool": "/tool";
     "tool_gen": "/tool/gen";
     "user-center": "/user-center";
+    "wms": "/wms";
+    "wms_devanning-order": "/wms/devanning-order";
+    "wms_inventory": "/wms/inventory";
+    "wms_inventory_location": "/wms/inventory/location";
+    "wms_inventory_warehouse-area": "/wms/inventory/warehouse-area";
+    "wms_warehouse": "/wms/warehouse";
+    "wms_warehouse_settings": "/wms/warehouse/settings";
+    "wms_warehouse_settings_location": "/wms/warehouse/settings/location";
+    "wms_warehouse_settings_warehouse-area": "/wms/warehouse/settings/warehouse-area";
   };
 
   /**
@@ -93,6 +104,7 @@ declare module "@elegant-router/types" {
     | "404"
     | "500"
     | "about"
+    | "basic"
     | "demo"
     | "home"
     | "iframe-page"
@@ -102,6 +114,7 @@ declare module "@elegant-router/types" {
     | "system"
     | "tool"
     | "user-center"
+    | "wms"
   >;
 
   /**
@@ -127,6 +140,7 @@ declare module "@elegant-router/types" {
     | "social-callback"
     | "user-center"
     | "about"
+    | "basic_platform-warehouse"
     | "demo_demo"
     | "demo_tree"
     | "home"
@@ -148,6 +162,11 @@ declare module "@elegant-router/types" {
     | "system_tenant"
     | "system_user"
     | "tool_gen"
+    | "wms_devanning-order"
+    | "wms_inventory_location"
+    | "wms_inventory_warehouse-area"
+    | "wms_warehouse_settings_location"
+    | "wms_warehouse_settings_warehouse-area"
   >;
 
   /**

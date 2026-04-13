@@ -1,0 +1,85 @@
+---
+description: Forest / RuoYi-Plus-Soybean 前端开发规范（Vue3 + Vite + Naive UI + UnoCSS + elegant-router）
+alwaysApply: true
+---
+
+# 前端开发规范（供 AI 代理遵循）
+
+## 0. 官方渊源与环境（对齐 [Gitee：xlsea/ruoyi-plus-soybean](https://gitee.com/xlsea/ruoyi-plus-soybean)）
+
+- **定位**：RuoYi-Vue-Plus 后端 + Soybean Admin 路线的前端；多租户、动态路由等与后端强相关，大功能以官方文档 [docs.ruoyi.xlsea.cn](https://docs.ruoyi.xlsea.cn) 与仓库 **`README.md`** 为准。
+- **包管理**：**仅使用 pnpm**（不要用 npm / yarn 装依赖）。`package.json` 的 **`engines`**：`Node >= 20.19.0`，**`pnpm >= 10.5.0`**。
+- **与后端生成器联动**：官方在 **`docs/`** 维护 Velocity 模板、菜单 SQL、Java 工具类；后端需在 `ruoyi-generator` 的 `resource/vm` 下维护 **`soy`** 目录等（详见仓库 README「代码生成与菜单更新」）。前端若改 CRUD 页面结构或接口契约，需意识到可能与 **`docs/template/*.vm`** 及菜单 SQL 同步需求。
+- **分支**：工作流相关版本在官方 **`flow`** 分支；默认 **`master`** 为主干（以远程仓库说明为准）。
+- **提交前钩子**：`simple-git-hooks` 会在 pre-commit 跑 **`typecheck`、`lint`、`fmt`** 并要求工作区干净；改动应能通过上述命令。
+
+## 1. 技术栈与路径约定
+
+- **框架**：Vue 3（Composition API、`script setup`）、**Vite 7.x**（`README` 徽章可能滞后，以 `package.json` 为准）、TypeScript（`strict`）、Pinia、**vue-router 5.x**。
+- **UI**：Naive UI；布局与 Admin 壳来自 **`@sa/materials`**（如 `AdminLayout`），勿用其他 UI 库替代核心布局。
+- **样式**：**UnoCSS**（`uno.config.ts`：`presetWind3` + `presetSoybeanAdmin`，暗色 `dark: 'class'`）+ 全局 SCSS（`vite.config.ts` 中已为 `.vue` 的 scss 注入 `@use "@/styles/scss/global.scss"`）。
+- **路径别名**：业务源码只用 **`@/` → `src/`**；仓库根偶尔用 **`~/`**（如图标、构建脚本）。禁止写长相对路径穿越多层目录引用 `src` 内模块。
+- **命名（与官方 README 一致且贴合本仓库）**：TS/JS 模块 **`camelCase`**；样式文件 **`kebab-case`**。Vue：**模板组件名 PascalCase**；单文件本身在业务里多为 **页面目录下的 `index.vue`** + **`modules/` 下 kebab-case 子组件**（如 `user-operate-drawer.vue`），与 README 举例的 `UserProfile.vue` 不冲突——**新增代码对齐同目录邻页**。
+
+## 2. 组件：注册方式与模板写法
+
+- **`src/components/**/*.vue`** 由 **`unplugin-vue-components`** 自动按需注册，并生成 **`src/typings/components.d.ts`**（勿手改该文件）。
+- **Naive UI**：同样自动注册，`NButton`、`NDataTable` 等可在模板直接使用；在 **`lang="tsx"`** 的 SFC 里若 TS 无法识别，可对用到的子组件 **显式 `import { Nx } from 'naive-ui'`**（与现有业务页一致）。
+- **模板中的组件名**：遵循 ESLint **`vue/component-name-in-template-casing: PascalCase`**；**`icon-*` 前缀** 为例外（小写），与 `registeredComponentsOnly: false` 一致。
+- **页面内局部模块**：同 feature 下的 `./modules/*.vue` 使用 **显式 import**，不要指望自动注册。
+- **`defineOptions({ name: 'Xxx' })`**：页面/重要组件需设 **`name`**，与路由或 KeepAlive 语义一致（多为 PascalCase）。
+
+## 3. 图标与静态资源
+
+- **Iconify**：通过 unplugin-icons 解析，组件名形如 **`Icon{Collection}{IconName}`**（见 `components.d.ts`）。
+- **本地 SVG**：放在 **`src/assets/svg-icon`**；**前缀** 由 `.env` 的 `VITE_ICON_PREFIX` / `VITE_ICON_LOCAL_PREFIX` 决定（默认 `icon`、`icon-local`）。本地集合在 **`build/plugins/unplugin.ts`** 中绑定，勿随意改 symbolId 规则。
+- **图片**：`@/assets/imgs` 等；用 `import` 引入或由构建 URL 处理，避免硬编码绝对路径。
+
+## 4. 样式编写顺序（优先级）
+
+1. **Uno 工具类**：布局与间距优先 `flex`、`items-center`、`gap-*`、`p-*`、`text-*`、`dark:` 等，与现有页面保持一致。
+2. **主题色**：优先 **`primary`、`bg-primary`** 等已在 `src/theme/vars.ts` / CSS 变量中打通的 token，避免魔法色值。
+3. **组件 `scoped` 样式**：必要时使用 **`lang="scss"`**；文件内可依赖已注入的全局 SCSS（变量/mixin 来自 `global.scss` 链路）。
+4. **勿引入**：与 Uno 重复的 bulky CSS 框架、或与 Naive 主题冲突的全局样式；改主题走 **`src/theme/settings.ts`** 与 theme store / 预设 JSON。
+
+## 5. 路由与页面文件
+
+- 路由由 **`@elegant-router/vue`** 基于视图文件生成；生成结果在 **`src/router/elegant/`**（`routes.ts`、`imports.ts`、`transform.ts`）。**修改路由结构后执行 `pnpm gen-route`（即 `sa gen-route`）** 再提交。
+- 视图放在 **`src/views/`**，`_builtin` 为内置（登录、异常等）；业务模块按域划分目录，入口多为 **`index.vue`**。
+- **布局**：在插件配置中映射 `layout.base` / `layout.blank`（见 **`build/plugins/router.ts`**）。新增需 `$` 语法的 layout+view 组合时遵循 elegant-router 文档与现存 `transform` 逻辑。
+- **静态/定制路由片段**：在 **`src/router/routes/index.ts`** 中维护 **`customRoutes`**、**`dynamicConstantRoutes`** 等，勿绕过统一 `transformElegantRoutesToVueRoutes` 流程硬编码整棵 router。
+- **Route meta**：`i18nKey` 形如 **`route.{routeName}`**，需在 **`src/locales/langs/*.ts`** 的 `route` 段补充文案。
+
+## 6. API 与类型
+
+- 请求封装：**`@/service/request`**（基于 **`@sa/axios`** 的 `createFlatRequest`）；具体接口为 **`src/service/api/**/*.ts`** 中的 **`fetch*`** 函数。**勿**绕过 `request` 裸用 axios；也**勿**照搬 README 里已过期的示例路径（如不存在的 `@/hooks/common/request`），以当前仓库 **`service/request` + `service/api`** 为准。
+- 命名：`fetchGet*`、`fetchCreate*`、`fetchUpdate*`、`fetchDelete*` 等与现有一致；返回类型用 **`request<T>()`** 泛型。
+- **TypeScript 类型**：接口模型放在 **`src/typings/api/*.api.d.ts`** 等 **`declare namespace Api { ... }`** 中扩展，不要散落在各 `.vue` 内大段重复定义。
+
+## 7. 状态、国际化、权限
+
+- **Pinia**：`src/store/modules/*`，Store id 使用 **`SetupStoreId`**（`src/enum/index.ts`）中的常量，勿手写魔法字符串。官方 README 中模块划分：**app / theme / route / tab / auth / dict / notice**——新增状态前先确认是否应归入现有模块。
+- **文案**：业务页与现有代码一致，优先 **`import { $t } from '@/locales'`**（与 **`vue-i18n`** 组合式 **`useI18n().t`** 二选一即可，但**同一文件不要混用两种风格**；本仓库以 **`$t`** 为主流）。key 需在 **zh-cn / en-us** 同步维护；系统级标题等在 **`system.*`**，菜单标题在 **`route.*`**，页面细分在 **`page.*`**。
+- **字典**：**`useDict('dict_type')`**（`src/hooks/business/dict`），表格/表单用 **`DictTag`、`DictSelect`** 等项目封装组件。
+- **权限**：**`useAuth()`** 的 **`hasAuth`** 与后端权限字符对齐；按钮与操作列渲染前做判断，与现有 `system/user` 等页模式一致。
+
+## 8. 列表页与表格（最常见业务形态）
+
+- 分页表格优先 **`useNaivePaginatedTable`**（**`src/hooks/common/table.ts`**），配合 **`defaultTransform`**、**`useTableOperate`**；列定义复杂时用 **`script setup lang="tsx"`** + JSX **`render`**（项目已广泛采用）。
+- 列宽与 **`scrollX`**：沿用 hooks 内对列宽累加的习惯，避免表格溢出布局崩坏。
+- 批量操作、导入导出：对齐 **`table-header-operation`**、**`useDownload`**、后端接口约定。
+
+## 9. Monorepo 与工作区包
+
+- 可复用逻辑优先 **`@sa/hooks`**、**`@sa/utils`**、**`@sa/axios`** 等 **`workspace:*`** 包；不要在 `src` 大量复制已有工具函数。
+
+## 10. 代码质量命令
+
+- 与 **package.json / README** 一致，常用：**`pnpm dev`**、**`pnpm build`**、**`pnpm typecheck`**、**`pnpm lint`**、**`pnpm fmt`**、**`pnpm gen-route`**、**`pnpm commit`** / **`pnpm commit:zh`**（`@sa/scripts` 的 git 约定）。
+- **pre-commit** 已串联 **`typecheck` + `lint` + `fmt`**；路由或视图目录变更后务必 **`pnpm gen-route`** 并提交 **`src/router/elegant/`** 等生成物（若团队要求纳入版本控制）。
+
+## 11. 对 AI 的具体约束（摘要）
+
+- **最小修改面**：只改任务相关文件；不批量重排 import、不做无关格式化。
+- **保持一致**：新文件命名、组件拆分方式、表格 hooks 用法、API 与 `Api.*` 类型声明方式对齐邻页；**版本号以当前仓库 `package.json` 为准**，勿仅依据 README 徽章。
+- **不要**：手改 `components.d.ts`；绕开 `request` 直接裸用 `axios`；在模板里混用非 PascalCase 组件名（`icon-*` 除外）；用未接入 i18n 的硬编码中文作为菜单/系统级文案。

@@ -1,7 +1,10 @@
 <script setup lang="ts" generic="T extends Record<string, unknown>, K = never">
 import { computed } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
+import { themeTableSizeOptions } from '@/constants/app';
+import { useThemeStore } from '@/store/modules/theme';
 import { $t } from '@/locales';
+import { translateOptions } from '@/utils/common';
 
 defineOptions({
   name: 'TableColumnSetting'
@@ -10,6 +13,8 @@ defineOptions({
 const columns = defineModel<NaiveUI.TableColumnCheck[]>('columns', {
   required: true
 });
+
+const themeStore = useThemeStore();
 
 const tooltipRecord: Record<NaiveUI.TableColumnFixed, App.I18n.I18nKey> = {
   left: 'datatable.fixed.right',
@@ -70,6 +75,39 @@ function toggleSelectAll(checked: boolean) {
       </NButton>
     </template>
     <div>
+      <div class="flex-col-stretch gap-10px">
+        <div class="text-12px text-gray-500">{{ $t('theme.tablePropsTitle') }}</div>
+        <div class="flex items-center justify-between gap-12px">
+          <div class="text-12px text-gray-500">{{ $t('theme.table.size.title') }}</div>
+          <NSelect
+            v-model:value="themeStore.table.size"
+            :options="translateOptions(themeTableSizeOptions)"
+            size="small"
+            class="w-120px"
+          />
+        </div>
+        <div class="flex items-center justify-between gap-12px">
+          <div class="text-12px text-gray-500">{{ $t('theme.table.bordered') }}</div>
+          <NSwitch v-model:value="themeStore.table.bordered" />
+        </div>
+        <div class="flex items-center justify-between gap-12px">
+          <div class="text-12px text-gray-500">{{ $t('theme.table.bottomBordered') }}</div>
+          <NSwitch v-model:value="themeStore.table.bottomBordered" />
+        </div>
+        <div class="flex items-center justify-between gap-12px">
+          <div class="text-12px text-gray-500">{{ $t('theme.table.singleColumn') }}</div>
+          <NSwitch v-model:value="themeStore.table.singleColumn" :checked-value="false" :unchecked-value="true" />
+        </div>
+        <div class="flex items-center justify-between gap-12px">
+          <div class="text-12px text-gray-500">{{ $t('theme.table.singleLine') }}</div>
+          <NSwitch v-model:value="themeStore.table.singleLine" :checked-value="false" :unchecked-value="true" />
+        </div>
+        <div class="flex items-center justify-between gap-12px">
+          <div class="text-12px text-gray-500">{{ $t('theme.table.striped') }}</div>
+          <NSwitch v-model:value="themeStore.table.striped" />
+        </div>
+      </div>
+
       <div class="h-36px flex-y-center rd-4px pl-26px hover:(bg-primary bg-opacity-20)">
         <NCheckbox
           :checked="selectAllChecked"
@@ -106,7 +144,7 @@ function toggleSelectAll(checked: boolean) {
           <ButtonIcon
             :disabled="!item.checked"
             :focusable="false"
-            :tooltip-content="$t(tooltipRecord[item.fixed!])"
+            :tooltip-content="$t(tooltipRecord[item.fixed || 'unFixed'])"
             @click="handleFixed(item)"
           >
             <icon-octicon-pin-16 v-if="item.fixed === 'unFixed'" />

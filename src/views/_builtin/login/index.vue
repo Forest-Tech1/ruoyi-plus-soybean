@@ -39,7 +39,7 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
 </script>
 
 <template>
-  <div class="scroll box-border size-full flex">
+  <div class="scroll box-border size-full flex flex-row flex-nowrap">
     <div class="relative box-border hidden h-full w-65vw overflow-hidden bg-primary-50 xl:block dark:bg-primary-900">
       <div class="relative z-100 flex items-center pl-30px pt-30px">
         <SystemLogo class="fill-primary text-32px" />
@@ -54,7 +54,8 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
       </div>
       <WaveBg />
     </div>
-    <div class="relative h-full flex-1 xl:m-auto sm:!w-full">
+    <!-- NOTE: keep right panel full-width only when left panel is hidden (lt-xl) -->
+    <div class="relative h-full flex-1 lt-xl:w-full">
       <header class="flex-y-center justify-between px-30px pt-30px xl:justify-end">
         <div class="relative z-100 flex items-center xl:hidden">
           <SystemLogo class="fill-primary text-32px" />
@@ -77,9 +78,7 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
           />
         </div>
       </header>
-      <main
-        class="m-auto mt-10% h-630px max-w-450px w-full rounded-5px bg-cover px-24px xl:absolute xl:inset-0 lg:mt-15% xl:mt-auto"
-      >
+      <main class="flex h-[calc(100%-76px)] items-center justify-center px-24px xl:px-0">
         <Transition :name="themeStore.page.animateMode" mode="out-in" appear>
           <component :is="activeModule.component" />
         </Transition>

@@ -51,6 +51,29 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'basic',
+    path: '/basic',
+    component: 'layout.base',
+    meta: {
+      title: 'basic',
+      i18nKey: 'route.basic',
+      icon: 'material-symbols:database-outline',
+      order: 2
+    },
+    children: [
+      {
+        name: 'basic_platform-warehouse',
+        path: '/basic/platform-warehouse',
+        component: 'view.basic_platform-warehouse',
+        meta: {
+          title: 'basic_platform-warehouse',
+          i18nKey: 'route.basic_platform-warehouse',
+          icon: 'material-symbols:warehouse-outline'
+        }
+      }
+    ]
+  },
+  {
     name: 'demo',
     path: '/demo',
     component: 'layout.base',
@@ -342,5 +365,96 @@ export const generatedRoutes: GeneratedRoute[] = [
       icon: 'material-symbols:account-circle-full',
       hideInMenu: true
     }
+  },
+  {
+    name: 'wms',
+    path: '/wms',
+    component: 'layout.base',
+    meta: {
+      title: 'wms',
+      i18nKey: 'route.wms',
+      icon: 'mdi:warehouse',
+      order: 5
+    },
+    children: [
+      {
+        name: 'wms_devanning-order',
+        path: '/wms/devanning-order',
+        component: 'view.wms_devanning-order',
+        meta: {
+          title: 'wms_devanning-order',
+          i18nKey: 'route.wms_devanning-order',
+          icon: 'material-symbols:inventory-2-outline'
+        }
+      },
+      {
+        name: 'wms_inventory',
+        path: '/wms/inventory',
+        meta: {
+          title: 'wms_inventory',
+          i18nKey: 'route.wms_inventory',
+          icon: 'material-symbols:inventory-outline'
+        },
+        children: [
+          {
+            name: 'wms_inventory_location',
+            path: '/wms/inventory/location',
+            component: 'view.wms_inventory_location',
+            meta: {
+              title: 'wms_inventory_location',
+              i18nKey: 'route.wms_inventory_location'
+            }
+          },
+          {
+            name: 'wms_inventory_warehouse-area',
+            path: '/wms/inventory/warehouse-area',
+            component: 'view.wms_inventory_warehouse-area',
+            meta: {
+              title: 'wms_inventory_warehouse-area',
+              i18nKey: 'route.wms_inventory_warehouse-area',
+              icon: 'material-symbols:map-outline'
+            }
+          }
+        ]
+      },
+      {
+        name: 'wms_warehouse',
+        path: '/wms/warehouse',
+        meta: {
+          title: 'wms_warehouse',
+          i18nKey: 'route.wms_warehouse'
+        },
+        children: [
+          {
+            name: 'wms_warehouse_settings',
+            path: '/wms/warehouse/settings',
+            meta: {
+              title: 'wms_warehouse_settings',
+              i18nKey: 'route.wms_warehouse_settings'
+            },
+            children: [
+              {
+                name: 'wms_warehouse_settings_location',
+                path: '/wms/warehouse/settings/location',
+                component: 'view.wms_warehouse_settings_location',
+                meta: {
+                  title: 'wms_warehouse_settings_location',
+                  i18nKey: 'route.wms_warehouse_settings_location'
+                }
+              },
+              {
+                name: 'wms_warehouse_settings_warehouse-area',
+                path: '/wms/warehouse/settings/warehouse-area',
+                component: 'view.wms_warehouse_settings_warehouse-area',
+                meta: {
+                  title: 'wms_warehouse_settings_warehouse-area',
+                  i18nKey: 'route.wms_warehouse_settings_warehouse-area'
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ];

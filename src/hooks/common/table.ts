@@ -131,7 +131,7 @@ export function useNaivePaginatedTable<ResponseData, ApiData>(
     getColumnChecks: cols => getColumnChecks(cols, options.getColumnVisible),
     getColumns,
     onFetched: data => {
-      pagination.itemCount = data.total;
+      pagination.itemCount = data.total ?? 0;
     }
   });
 
@@ -251,12 +251,12 @@ export function defaultTransform<ApiData>(
     };
   }
 
-  const { rows: records, pageNum: current, total } = data;
+  const { rows: records, pageNum: current, total } = data ?? {};
 
   return {
-    data: records,
-    pageNum: current,
-    total
+    data: Array.isArray(records) ? records : [],
+    pageNum: current ?? 1,
+    total: Number(total) || 0
   };
 }
 
