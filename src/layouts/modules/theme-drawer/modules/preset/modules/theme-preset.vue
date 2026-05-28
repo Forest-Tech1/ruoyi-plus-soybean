@@ -1,46 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { defu } from 'defu';
-import { useThemeStore } from '@/store/modules/theme';
-import { themeSettings } from '@/theme/settings';
+import { applyThemePreset, type ThemePresetApplyPayload } from '@/utils/theme-preset-apply';
 import { $t } from '@/locales';
 
 defineOptions({
   name: 'ThemePreset'
 });
 
-type ThemePreset = Pick<
-  App.Theme.ThemeSetting,
-  | 'themeScheme'
-  | 'grayscale'
-  | 'colourWeakness'
-  | 'recommendColor'
-  | 'themeColor'
-  | 'themeRadius'
-  | 'otherColor'
-  | 'isInfoFollowPrimary'
-  | 'layout'
-  | 'page'
-  | 'header'
-  | 'tab'
-  | 'fixedHeaderAndTab'
-  | 'sider'
-  | 'footer'
-  | 'watermark'
-  | 'tokens'
-> & {
-  name: string;
-  desc: string;
-  i18nkey?: string;
-  version: string;
-  sort: number;
-  /** Optional NaiveUI theme overrides */
-  naiveui?: App.Theme.NaiveUIThemeOverride;
-};
+type ThemePreset = ThemePresetApplyPayload;
 
 const presetModules = import.meta.glob('@/theme/preset/*.json', { eager: true, import: 'default' });
-
-const themeStore = useThemeStore();
 
 // Extract preset data
 const presets = computed(() =>
@@ -79,37 +48,16 @@ const getPresetDesc = (preset: ThemePreset): string => {
   }
 };
 
-const applyPreset = (preset: ThemePreset): void => {
-  const mergedPreset = defu(preset, themeSettings);
-  const { themeScheme, grayscale, colourWeakness, layout, watermark, naiveui, ...rest } = mergedPreset;
-  themeStore.setThemeScheme(themeScheme);
-  themeStore.setGrayscale(grayscale);
-  themeStore.setColourWeakness(colourWeakness);
-  themeStore.setThemeLayout(layout.mode);
-  themeStore.setWatermarkEnableUserName(watermark.enableUserName);
-  themeStore.setWatermarkEnableTime(watermark.enableTime);
-
-  Object.assign(themeStore, {
-    ...rest,
-    layout: { ...themeStore.layout, scrollMode: layout.scrollMode },
-    page: { ...rest.page },
-    header: { ...rest.header },
-    tab: { ...rest.tab },
-    sider: { ...rest.sider },
-    footer: { ...rest.footer },
-    watermark: { ...watermark },
-    tokens: { ...rest.tokens }
-  });
-
-  // Apply NaiveUI theme overrides if present
-  themeStore.setNaiveThemeOverrides(naiveui);
-
-  window.$message?.success($t('theme.appearance.preset.applySuccess'));
+const applyPreset = (preset: ThemePreset & { id?: string }): void => {
+  applyThemePreset(preset);
 };
 </script>
 
 <template>
   <NDivider>{{ $t('theme.appearance.preset.title') }}</NDivider>
+  <p class="mb-10px text-12px text-gray-500 leading-relaxed dark:text-gray-400">
+    {{ $t('theme.appearance.preset.switchHint') }}
+  </p>
 
   <div class="flex flex-col gap-3">
     <div

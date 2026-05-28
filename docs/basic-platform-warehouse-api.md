@@ -63,6 +63,7 @@
 | `basic:warehouse:edit`   | 编辑仓库             |
 | `basic:warehouse:status` | 单条启停、批量启停   |
 | `basic:warehouse:export` | 导出 Excel           |
+| `basic:warehouse:import` | **Excel 批量导入仓库**（预览 + 确认，见 §7） |
 
 ---
 
@@ -95,9 +96,12 @@
 | `city`          | String   | 否   | ≤100                                                        |
 | `addressLine`   | String   | 是   | 街道地址，≤200                                              |
 | `postalCode`    | String   | 否   | ≤20                                                         |
+| `palletCbm`     | Number   | 否   | **单托 CBM**（立方米/托，`DECIMAL` 或 `double`；≥0，可空）  |
 | `status`        | String   | 是   | `0` / `1`                                                   |
 | `remark`        | String   | 否   | ≤200                                                        |
 | `createTime`    | DateTime | —    | 列表默认按创建时间 **倒序**                                 |
+
+JSON 与前端的字段名为 **`palletCbm`**（驼峰）；若后端实体为 **`pallet_cbm`**（蛇形），请在统一响应适配层映射为驼峰或为前端增加兼容别名。
 
 ### 4.3 操作记录 `WarehouseOperateLog`（详情可选）
 
@@ -203,14 +207,14 @@
 
 - **POST** `/basic/platform-warehouse`
 - **权限**：`basic:warehouse:add`
-- **Body**：`PlatformWarehouseOperateParams`（无 `id`）
+- **Body**：`PlatformWarehouseOperateParams`（无 `id`），可含可选字段 **`palletCbm`**
 - **`platformId`**：**必填**，由用户在表单中 **手动选择** 目标平台并随请求提交；后端须校验平台存在、归属有效（若停用平台不允许再挂新仓，请在此返回明确错误）。
 
 ### 6.4 修改仓库
 
 - **PUT** `/basic/platform-warehouse`
 - **权限**：`basic:warehouse:edit`
-- **Body**：含 `id`；**不可改 `warehouseCode`**。
+- **Body**：含 `id`；**不可改 `warehouseCode`**；可更新 **`palletCbm`**（含置空表示清空单托 CBM，与前端 `null` 对齐）。
 - **`platformId`**：前端 **编辑时锁定所属平台**（不允许改为其他平台）。后端 **建议校验**：若 body 中 `platformId` 与数据库中该仓库已有 `platformId` **不一致**，返回 **400** 或直接 **忽略该字段**，避免误把仓库迁移到其他平台；请勿静默接受跨平台变更除非有单独业务审批流。
 
 ### 6.5 单条启停
@@ -243,11 +247,105 @@
 | `status`               | 可选                                                        |
 | `countryCodes`         | 可选；前端使用 **逗号拼接** 单参数，如 `countryCodes=US,CN` |
 
-- **响应**：文件流，`Content-Disposition` 附件；文件名由前端生成。
+- **响应**：文件流，`Content-Disposition` 附件；文件名由前端生成；**列**与列表字段一致，须含 **单托 CBM**（`palletCbm` / 表头「单托CBM」或团队与模板统一命名）。
+
+### 6.8 下载导入模板 Excel
+
+- **GET** `/basic/platform-warehouse/importTemplate`
+- **权限**：`basic:warehouse:import`（或与 `export` 同级由团队约定）
+- **响应**：`xlsx` 附件；**表头顺序与列名**须与 §7.1 一致（首行中文列名或团队约定英文列名，**须在模板说明或本文档中固定**）。
 
 ---
 
-## 7. 业务规则摘要（后端需落地）
+## 7. 仓库 Excel 批量导入（新增）
+
+用于 **`/basic/platform-warehouse`** 页面「导入仓库」：两步 **解析预览 → 确认落库**，与系统其它导入习惯一致。
+
+### 7.1 Excel 列定义（按列顺序，与模板一致）
+
+| 顺序 | 表头（建议中文） | 系统字段（JSON 驼峰） | 必填 | 说明 |
+| ---- | ---------------- | ---------------------- | ---- | ---- |
+| 1 | 平台代码 | `platformCode` | 是 | 须能 **精确匹配** 已存在平台的 `platformCode`（大写规则与 §4.1 一致）；不存在则本行 `errorMessage` |
+| 2 | 仓库代码 | `warehouseCode` | 是 | 全局唯一等规则同 §4.2；**仓库名称与仓库代码相同**：落库时 **`warehouseName = warehouseCode`**（若 Excel 未单独提供名称列，解析时直接赋值即可） |
+| 3 | 国家/地区 | `countryCode` | 是 | ISO 3166-1 alpha-2（如 `US`、`CN`） |
+| 4 | 详细地址 | `addressLine` | 是 | 街道等，长度同 §4.2 |
+| 5 | 城市 | `city` | 否 | |
+| 6 | 州/省 | `stateProvince` | 否 | |
+| 7 | 邮编 | `postalCode` | 否 | |
+| 8 | 单托CBM | `palletCbm` | 否 | 立方米/托；≥0；未列或空表示不维护 |
+
+- **兼容**：仅含 **前 7 列** 的旧模板仍应可解析（`palletCbm` 视为空）。
+- **表头匹配**：建议忽略首尾空格；首行表头与模板一致；数据从第 2 行起。
+- **空行**：跳过。
+- **默认状态**：新插入仓库 `status = "0"`（启用），除非业务另有约定。
+
+### 7.2 解析预览（不落库）
+
+- **POST** `/basic/platform-warehouse/import-preview`
+- **权限**：`basic:warehouse:import`
+- **Content-Type**：`multipart/form-data`
+- **表单字段**：
+  - **`file`**：单个 Excel 文件（`.xls` / `.xlsx`）。
+  - **`updateSupport`**：字符串 `true` / `false`（与系统用户导入习惯一致）。为 `true` 时：若 **`platformId` + `warehouseCode`**（或业务约定的唯一键）已存在，则 **更新** 地址与国家等字段；为 `false` 时仅新增，冲突则本行 `errorMessage`。
+- **响应 `data`**（与前端 `Api.Basic.PlatformWarehouseImportPreviewResult` 对齐）：
+
+```json
+{
+  "importBatchId": "可选-UUID-便于确认幂等",
+  "rows": [
+    {
+      "rowNum": 2,
+      "platformCode": "AMZ",
+      "warehouseCode": "ONT8",
+      "warehouseName": "ONT8",
+      "countryCode": "US",
+      "addressLine": "123 Main St",
+      "city": "Los Angeles",
+      "stateProvince": "CA",
+      "postalCode": "90001",
+      "palletCbm": 1.8,
+      "errorMessage": null
+    }
+  ]
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `importBatchId` | 可选；若返回，**确认接口须原样带回**，便于服务端校验预览与确认一致、防重复提交。 |
+| `rows[].rowNum` | 可选；Excel 行号（便于用户对照改表）。 |
+| `rows[].warehouseName` | 建议与 `warehouseCode` 相同回显；可为 `null`，前端仍展示代码列。 |
+| `rows[].errorMessage` | 非空表示本行 **不会** 在确认阶段落库（或整单失败由后端策略二选一，**推荐跳过错误行**）。 |
+| `rows[].palletCbm` | 可选；与 §4.2 一致；导入更新时写入或清空策略由后端与 `updateSupport` 约定。 |
+
+### 7.3 确认导入（落库）
+
+- **POST** `/basic/platform-warehouse/import-confirm`
+- **权限**：`basic:warehouse:import`
+- **Content-Type**：`application/json`
+- **Body**：`PlatformWarehouseImportConfirmParams`
+
+```json
+{
+  "updateSupport": false,
+  "importBatchId": "与预览一致或省略",
+  "rows": []
+}
+```
+
+- **`rows`**：须与 **预览接口返回的 `rows` 同构、同一顺序**（前端原样回传）；后端 **再次校验**，仅处理 `errorMessage` 为空或 null 的行。
+- **响应**：`AjaxResult` / 项目惯例，`data: true` 表示处理完成（或返回成功条数、失败明细，需与前端约定；**当前前端按 `boolean` 解析**）。
+
+### 7.4 业务规则（摘要）
+
+1. **`warehouseName` 始终等于 `warehouseCode`**（导入路径无独立名称列时由解析赋值）。
+2. 通过 `platformCode` 查 `platformId`；查不到则该行错误。
+3. `updateSupport = false` 时：`warehouseCode` 全局已存在 → 该行错误。
+4. 导入完成后，建议刷新平台列表上的 **`warehouseCount`**（若由列表接口计算则无额外处理）。
+
+---
+
+## 8. 业务规则摘要（后端需落地）
 
 1. **不允许删除平台**：仅停用；历史关联保留。
 2. **停用平台**：可同步停用其下全部仓库；业务模块下拉过滤停用平台及其仓库。
@@ -259,7 +357,7 @@
 
 ---
 
-## 8. 前端调用索引（便于联调）
+## 9. 前端调用索引（便于联调）
 
 | 方法 | 路径                                     | 函数（`src/service/api/basic/platform-warehouse.ts`） |
 | ---- | ---------------------------------------- | ----------------------------------------------------- |
@@ -276,5 +374,8 @@
 | PUT  | `/basic/platform-warehouse/{id}/status`  | `fetchUpdatePlatformWarehouseStatus`                  |
 | PUT  | `/basic/platform-warehouse/status/batch` | `fetchBatchPlatformWarehouseStatus`                   |
 | GET  | `/basic/platform-warehouse/export`       | `useDownload` 直链                                    |
+| GET  | `/basic/platform-warehouse/importTemplate` | `useDownload` 直链（导入模板）                        |
+| POST | `/basic/platform-warehouse/import-preview` | `fetchPreviewPlatformWarehouseImport`                 |
+| POST | `/basic/platform-warehouse/import-confirm` | `fetchConfirmPlatformWarehouseImport`               |
 
 如有字段名或路径变更，请同步修改前端 `platform-warehouse.ts` 与 `basic.api.d.ts`。

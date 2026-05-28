@@ -23,16 +23,11 @@ interface StatisticData {
 const statisticData = computed<StatisticData[]>(() => [
   {
     id: 0,
-    label: $t('page.home.projectCount'),
-    value: '25'
-  },
-  {
-    id: 1,
     label: $t('page.home.todo'),
     value: '4/16'
   },
   {
-    id: 2,
+    id: 1,
     label: $t('page.home.message'),
     value: '12'
   }

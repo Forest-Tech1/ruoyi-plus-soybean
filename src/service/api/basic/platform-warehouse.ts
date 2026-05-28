@@ -106,3 +106,24 @@ export function fetchBatchPlatformWarehouseStatus(ids: CommonType.IdType[], stat
     data: { ids, status }
   });
 }
+
+/** Excel 导入预览（不落库） */
+export function fetchPreviewPlatformWarehouseImport(file: File, updateSupport: boolean) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('updateSupport', updateSupport ? 'true' : 'false');
+  return request<Api.Basic.PlatformWarehouseImportPreviewResult>({
+    url: '/basic/platform-warehouse/import-preview',
+    method: 'post',
+    data: fd
+  });
+}
+
+/** 确认导入仓库（批量写入） */
+export function fetchConfirmPlatformWarehouseImport(data: Api.Basic.PlatformWarehouseImportConfirmParams) {
+  return request<boolean>({
+    url: '/basic/platform-warehouse/import-confirm',
+    method: 'post',
+    data
+  });
+}

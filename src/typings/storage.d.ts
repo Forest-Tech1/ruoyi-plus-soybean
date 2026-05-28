@@ -29,6 +29,8 @@ declare namespace StorageType {
     darkMode: boolean;
     /** The theme settings */
     themeSettings: App.Theme.ThemeSetting;
+    /** 当前应用的主题预设 id（与 `src/theme/preset/*.json` 文件名一致，用于 html 类名与附加样式） */
+    themeActivePresetId?: string | null;
     /**
      * The override theme flags
      *

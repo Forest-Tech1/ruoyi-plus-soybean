@@ -5,6 +5,38 @@ import { useRouteStore } from '@/store/modules/route';
 import { localStg } from '@/utils/storage';
 import { getRouteName } from '@/router/elegant/transform';
 
+/** 司机 Check-in 独立页路径（空白布局，无后台侧栏） */
+const DRIVER_CHECK_IN_PATH = '/driver-check-in';
+
+/** 后台 Check-in 登记记录列表（勿重定向到公开司机登记页） */
+function isDriverCheckInRecordRoute(to: RouteLocationNormalized): boolean {
+  const name = String(to.name ?? '');
+  return name === 'wms_order_driver-check-in-record' || /\/driver-check-in-record\/?$/i.test(to.path);
+}
+
+/** 从左侧菜单误配为「订单管理」子页面时，统一跳到独立路由 */
+function getDriverCheckInStandaloneLocation(to: RouteLocationNormalized): RouteLocationRaw | null {
+  if (to.path === DRIVER_CHECK_IN_PATH) return null;
+  if (isDriverCheckInRecordRoute(to)) return null;
+
+  const name = String(to.name ?? '');
+  const path = to.path;
+  const isPublicDriverCheckIn =
+    name === 'driver-check-in' ||
+    name.includes('driver_check_in') ||
+    (path.includes('/driver-check-in') && !path.includes('driver-check-in-record')) ||
+    /\/driver-check-in\/?$/i.test(path);
+
+  if (!isPublicDriverCheckIn) return null;
+
+  return {
+    path: DRIVER_CHECK_IN_PATH,
+    query: to.query,
+    hash: to.hash,
+    replace: true
+  };
+}
+
 /**
  * create route guard
  *
@@ -12,6 +44,11 @@ import { getRouteName } from '@/router/elegant/transform';
  */
 export function createRouteGuard(router: Router) {
   router.beforeEach(async (to, from) => {
+    const driverCheckInLocation = getDriverCheckInStandaloneLocation(to);
+    if (driverCheckInLocation) {
+      return driverCheckInLocation;
+    }
+
     const location = await initRoute(to);
 
     if (location) {

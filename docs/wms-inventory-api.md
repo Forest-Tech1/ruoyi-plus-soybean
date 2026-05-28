@@ -104,13 +104,15 @@
   - 当 `locationMixedStorage=true`：`maxMixedQty` **必填且 > 0**
   - 当 `locationMixedStorage=false`：`maxMixedQty` 建议置空（`null`）
 
-### 3.6 仅更新「上架条件」
+### 3.6 仅更新「上架条件」（已废弃 · 前端不再调用）
+
+> 上架规则已迁移至 **仓库设置 → 上架配置**，见 **[wms-putaway-rule-api.md](./wms-putaway-rule-api.md)**。本接口可保留用于数据迁移或暂时双写，新 UI 不再使用库区上的 `putawayCondition` 编辑入口。
 
 - **PUT** `/wms/inventory/warehouse-area/{id}/putaway-condition`
 - **Body**：`{ "putawayCondition": "<JSON_STRING>" }`
-- `putawayCondition` 允许空字符串：表示清空条件（前端展示「未设置」）。
+- `putawayCondition` 允许空字符串：表示清空条件。
 
-**前端 JSON 结构（推荐后端直接存储该字符串）**：
+**历史 JSON 结构（version 1，迁移参考）**：
 
 ```json
 {
@@ -162,12 +164,18 @@
 - **GET** `/wms/inventory/location/list`
 - **Query**：
 
-| 参数                  | 说明                                                 |
-| --------------------- | ---------------------------------------------------- |
-| `pageNum`、`pageSize` | 分页                                                 |
-| `keyword`             | 可选；同时匹配区域、库位编码（模糊，具体由后端实现） |
-| `orderByColumn`       | 白名单建议：`createTime`、`zoneCode`、`locationCode` |
-| `isAsc`               | **建议默认**：`createTime` 降序                      |
+| 参数                  | 说明                                                                 |
+| --------------------- | -------------------------------------------------------------------- |
+| `pageNum`、`pageSize` | 分页                                                                 |
+| `zoneCode`            | 可选；**库区**筛选（建议与库位表 `zoneCode` 存值一致，如库区名称；精确或按约定模糊） |
+| `locationKeyword`     | 可选；**仅库位**侧模糊（如库位编码）；与 `zoneCode` **独立**，勿与库区混在一个字段 |
+| `keyword`             | （兼容旧版）同时匹配区域与库位；新前端已拆分为上两项，后端可忽略或自行映射 |
+| `inventoryWarehouseCode` | （可选）库存平面图：库存含该仓库代码的库位 ∪ 空库位，详见 [wms-warehouse-inventory-visual-map-api.md](./wms-warehouse-inventory-visual-map-api.md) §1.0 |
+| `putawayDispatchMethod` | （可选）库存平面图·上架筛选：派送方式，非空才启用上架维度，详见同上 §1.0 |
+| `putawayPlatformId` | （可选）库存平面图·上架筛选：平台 id |
+| `putawayPlatformWarehouseCode` | （可选）库存平面图·上架筛选：平台仓库代码 |
+| `orderByColumn`       | 白名单建议：`createTime`、`zoneCode`、`locationCode`                 |
+| `isAsc`               | **建议默认**：`createTime` 降序                                      |
 
 ### 4.2 详情
 

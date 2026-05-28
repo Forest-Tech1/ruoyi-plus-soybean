@@ -21,7 +21,10 @@ defineOptions({
   name: 'OssList'
 });
 
+import { useRouter } from 'vue-router';
+
 const { routerPushByKey } = useRouterPush();
+const router = useRouter();
 const { hasAuth } = useAuth();
 const { oss } = useDownload();
 const appStore = useAppStore();
@@ -277,7 +280,20 @@ async function handleUpdatePreview(checked: boolean) {
 }
 
 function handleToOssConfig() {
-  routerPushByKey('system_oss-config');
+  // 兼容两种路由名：
+  // 1) 前端生成路由：system_oss-config（/system/oss-config）
+  // 2) 后端动态路由 component=system/oss/config 解析后：system_oss_config（/system/oss-config/index）
+  if (router.hasRoute('system_oss-config')) {
+    routerPushByKey('system_oss-config');
+    return;
+  }
+  if (router.hasRoute('system_oss_config')) {
+    void router.push({ name: 'system_oss_config' as any });
+    return;
+  }
+  window.$message?.warning(
+    '路由未注册：OSS 配置页未加载（多为后端菜单/动态路由未下发或未刷新）。请重新登录或联系后端检查菜单 component/path。'
+  );
 }
 </script>
 

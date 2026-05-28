@@ -114,6 +114,16 @@ const dynamicConstantRoutes: ElegantRoute[] = [
     }
   },
   {
+    name: 'driver-check-in',
+    path: '/driver-check-in',
+    component: 'layout.blank$view.driver-check-in',
+    meta: {
+      title: 'driver-check-in',
+      i18nKey: 'route.driver-check-in',
+      constant: true
+    }
+  },
+  {
     name: 'user-center',
     path: '/user-center',
     component: 'layout.base$view.user-center',

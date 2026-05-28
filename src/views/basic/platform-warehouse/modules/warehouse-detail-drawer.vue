@@ -74,6 +74,13 @@ watch(visible, async v => {
             <NDescriptionsItem :label="$t('page.basic.platformWarehouse.postalCode')">
               {{ detail.postalCode || '—' }}
             </NDescriptionsItem>
+            <NDescriptionsItem :label="$t('page.basic.platformWarehouse.palletCbm')">
+              {{
+                detail.palletCbm != null && Number.isFinite(Number(detail.palletCbm))
+                  ? `${Number(detail.palletCbm)} m³`
+                  : '—'
+              }}
+            </NDescriptionsItem>
             <NDescriptionsItem :label="$t('page.basic.platformWarehouse.status')">
               {{
                 detail.status === '0'

@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { computed, defineComponent, useAttrs } from 'vue';
+import { computed, defineComponent, ref, useAttrs } from 'vue';
 import type { UploadFileInfo, UploadProps } from 'naive-ui';
 import type { JSX } from 'vue/jsx-runtime';
 import { fetchBatchDeleteOss } from '@/service/api/system/oss';
@@ -13,9 +13,13 @@ defineOptions({
 
 interface Props {
   action?: string;
+  /** multipart 文件字段名，需与后端一致（如拆柜附件上传约定为 `file`） */
+  fileField?: string;
   data?: Record<string, any>;
   defaultUpload?: boolean;
   showTip?: boolean;
+  /** 是否展示 Naive 上传组件自带的文件名单（与业务侧表格二选一时可关） */
+  showFileList?: boolean;
   max?: number;
   accept?: string;
   fileSize?: number;
@@ -24,9 +28,11 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   action: `/resource/oss/upload`,
+  fileField: 'file',
   data: undefined,
   defaultUpload: true,
   showTip: true,
+  showFileList: true,
   max: 5,
   accept: undefined,
   fileSize: 5,
@@ -42,9 +48,24 @@ const accept = computed(() => {
 
 const attrs: UploadProps = useAttrs();
 
+const emit = defineEmits<{
+  /** 已从 OSS 删除成功，业务页可据此同步订单侧附件 id（此时列表项尚未从 UI 移除） */
+  afterOssDelete: [deletedOssId: string];
+}>();
+
 let fileNum = 0;
 const fileList = defineModel<UploadFileInfo[]>('fileList', {
   default: () => []
+});
+
+const uploadRef = ref<any>(null);
+
+function submit() {
+  uploadRef.value?.submit?.();
+}
+
+defineExpose({
+  submit
 });
 
 const TooltipContent = defineComponent({
@@ -170,6 +191,7 @@ async function handleRemove(file: UploadFileInfo) {
   const { error } = await fetchBatchDeleteOss([file.id]);
   if (error) return false;
   window.$message?.success('删除成功');
+  emit('afterOssDelete', String(file.id));
   return true;
 }
 </script>
@@ -177,8 +199,10 @@ async function handleRemove(file: UploadFileInfo) {
 <template>
   <div class="w-full flex-col">
     <NUpload
+      ref="uploadRef"
       v-bind="attrs"
       v-model:file-list="fileList"
+      :name="fileField"
       :action="`${baseURL}${action}`"
       :data="data"
       :headers="headers"
@@ -187,6 +211,7 @@ async function handleRemove(file: UploadFileInfo) {
       :multiple="max > 1"
       directory-dnd
       :default-upload="defaultUpload"
+      :show-file-list="showFileList"
       :list-type="uploadType === 'image' ? 'image-card' : 'text'"
       :is-error-state="isErrorState"
       @finish="handleFinish"

@@ -1,0 +1,121 @@
+{
+  "name": "Silver Neon 3D",
+  "desc": "Silver-gray gradient layout, neon accents, embossed 3D-style controls",
+  "i18nkey": "theme.appearance.preset.silverNeon3d",
+  "version": "1.0.0",
+  "sort": 25,
+  "themeScheme": "light",
+  "grayscale": false,
+  "colourWeakness": false,
+  "recommendColor": true,
+  "themeColor": "#0ea5e9",
+  "themeRadius": 10,
+  "otherColor": {
+    "info": "#22d3ee",
+    "success": "#34d399",
+    "warning": "#fbbf24",
+    "error": "#fb7185"
+  },
+  "isInfoFollowPrimary": false,
+  "layout": {
+    "mode": "vertical",
+    "scrollMode": "content"
+  },
+  "page": {
+    "animate": true,
+    "animateMode": "fade-slide"
+  },
+  "header": {
+    "height": 56,
+    "breadcrumb": {
+      "visible": true,
+      "showIcon": true
+    },
+    "multilingual": {
+      "visible": true
+    },
+    "globalSearch": {
+      "visible": true
+    }
+  },
+  "tab": {
+    "visible": true,
+    "cache": true,
+    "height": 44,
+    "mode": "chrome",
+    "closeTabByMiddleClick": true
+  },
+  "fixedHeaderAndTab": true,
+  "sider": {
+    "inverted": false,
+    "width": 230,
+    "collapsedWidth": 64,
+    "mixWidth": 90,
+    "mixCollapsedWidth": 64,
+    "mixChildMenuWidth": 200,
+    "autoSelectFirstMenu": false
+  },
+  "footer": {
+    "visible": false,
+    "fixed": false,
+    "height": 48,
+    "right": true
+  },
+  "watermark": {
+    "visible": false,
+    "text": "RuoYi-Plus-Soybean",
+    "enableUserName": false,
+    "enableTime": false,
+    "timeFormat": "YYYY-MM-DD HH:mm"
+  },
+  "table": {
+    "bordered": true,
+    "bottomBordered": true,
+    "singleColumn": false,
+    "singleLine": true,
+    "size": "small",
+    "striped": false
+  },
+  "tokens": {
+    "light": {
+      "colors": {
+        "container": "rgb(252, 253, 255)",
+        "layout": "rgb(214, 220, 228)",
+        "inverted": "rgb(30, 41, 59)",
+        "base-text": "rgb(30, 41, 59)"
+      },
+      "boxShadow": {
+        "header": "0 10px 28px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.45) inset",
+        "sider": "4px 0 24px rgba(15, 23, 42, 0.1), inset -1px 0 0 rgba(255, 255, 255, 0.25)",
+        "tab": "0 8px 20px rgba(15, 23, 42, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5) inset"
+      }
+    },
+    "dark": {
+      "colors": {
+        "container": "rgb(28, 32, 40)",
+        "layout": "rgb(22, 26, 34)",
+        "base-text": "rgb(226, 232, 240)"
+      }
+    }
+  },
+  "naiveui": {
+    "common": {
+      "fontWeightStrong": "600"
+    },
+    "Card": {
+      "borderRadius": "14px"
+    },
+    "Input": {
+      "borderRadius": "10px"
+    },
+    "Button": {
+      "borderRadius": "10px",
+      "fontWeight": "600",
+      "heightMedium": "38px"
+    },
+    "DataTable": {
+      "borderRadius": "10px",
+      "thColor": "rgba(248, 250, 252, 0.92)"
+    }
+  }
+}

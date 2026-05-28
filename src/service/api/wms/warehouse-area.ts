@@ -9,6 +9,14 @@ export function fetchGetWarehouseAreaList(params?: Api.Wms.WarehouseAreaSearchPa
   });
 }
 
+/** 库区/全库库存汇总（平面图侧栏用） */
+export function fetchGetWarehouseAreaStockStatistics() {
+  return request<Api.Wms.WarehouseAreaStockStatistics>({
+    url: '/wms/inventory/warehouse-area/stock-statistics',
+    method: 'get'
+  });
+}
+
 /** 库区详情 */
 export function fetchGetWarehouseAreaDetail(id: CommonType.IdType) {
   return request<Api.Wms.WarehouseArea>({

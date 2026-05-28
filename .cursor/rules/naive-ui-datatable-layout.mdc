@@ -1,0 +1,44 @@
+---
+description: Naive UI NDataTable 在 flex 布局中「有数据但不显示行」的规避（flex-height / 表体高度）
+globs: "**/*.vue"
+alwaysApply: false
+---
+
+# NDataTable 与 flex 布局
+
+## 现象
+
+接口返回 `rows` 有数据、分页 `total` 也大于 0，但表格**表体空白**；或侧栏/嵌套卡片内表格始终无行。
+
+## 常见根因
+
+1. **`flex-height` + 父级无确定高度**  
+   使用 `flex-height` 时，表格依赖**祖先链上可计算的高度**。若父级是 `flex-1` 但未配合 `min-h-0`，或外层没有 `height` / `min-height`，表体区域高度会变成 **0**，数据存在但不可见。
+
+2. **误用 `flex-height` 在「高度未闭合」的页面**  
+   全屏列表页若未把 `NCard` 的 `content-class` 设为 `flex min-h-0 flex-1 flex-col` 等，不要在表格上开 `flex-height`。
+
+## 推荐做法
+
+- **整页表格 + 底部分页**：外层 `flex flex-col flex-1 min-h-0`；表格区域 `flex-1 min-h-0`；表格 `:pagination="false"` + **`flex-height`**；分页器单独放在下方 `shrink-0` 的栏里用 **`NPagination`** 绑定 `useNaivePaginatedTable` 返回的 `pagination`。
+- **侧栏/弹窗内固定高度滚动**：优先 **`max-height` + 表内滚动**，或保证侧栏 `flex flex-col h-full min-h-0` 后再用 `flex-height`。
+- **不要用 `flex-height` 试探**：父链未确认前，用 `min-h-*` 或明确 `max-height` 更稳。
+
+## 反例 / 正例
+
+```vue
+<!-- ❌ 父级无高度仍 flex-height -->
+<div class="flex flex-col">
+  <NDataTable flex-height :data="rows" />
+</div>
+
+<!-- ✅ 父级闭合高度 + min-h-0 -->
+<div class="flex flex-1 flex-col min-h-0 overflow-hidden">
+  <NDataTable flex-height class="min-h-0 flex-1" :pagination="false" :data="rows" />
+</div>
+```
+
+## 其它检查
+
+- **`row-key`**：雪花 `id` 可能为大数字，用 `String(row.id)`，避免 key 重复或渲染异常。
+- **分页数据**：若后端偶发 `rows` 单对象而非数组，需在 `defaultTransform` / `extractPaginatedRows` 中归一成数组（见 `src/hooks/common/table.ts`、`src/constants/wms-park.ts`）。

@@ -89,13 +89,19 @@ export default function useTable<ResponseData, ApiData, Column, Pagination exten
     }));
   }
 
+  /** 并发请求去重：仅应用最后一次 `getData` 的结果，避免翻页/改 pageSize/删除刷新等场景下旧响应覆盖新数据导致表格空白 */
+  let fetchSeq = 0;
+
   async function getData() {
+    const seq = ++fetchSeq;
     try {
       startLoading();
 
       const response = await api();
+      if (seq !== fetchSeq) return;
 
       const transformed = transform(response);
+      if (seq !== fetchSeq) return;
 
       data.value = getTableData(transformed, pagination);
 
@@ -103,7 +109,9 @@ export default function useTable<ResponseData, ApiData, Column, Pagination exten
 
       await onFetched?.(transformed);
     } finally {
-      endLoading();
+      if (seq === fetchSeq) {
+        endLoading();
+      }
     }
   }
 

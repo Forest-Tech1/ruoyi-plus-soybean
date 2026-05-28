@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { FormRules } from 'naive-ui';
-import { NButton, NDrawer, NDrawerContent, NForm, NFormItem, NInput, NSelect, NSwitch } from 'naive-ui';
+import { NButton, NDrawer, NDrawerContent, NForm, NFormItem, NInput, NInputNumber, NSelect, NSwitch } from 'naive-ui';
 import { fetchCreatePlatformWarehouse, fetchUpdatePlatformWarehouse } from '@/service/api/basic/platform-warehouse';
 import { COUNTRY_OPTIONS, US_STATE_OPTIONS } from '@/constants/basic-platform';
 import { useAppStore } from '@/store/modules/app';
@@ -36,6 +36,7 @@ const model = ref<Api.Basic.PlatformWarehouseOperateParams>({
   city: null,
   addressLine: '',
   postalCode: null,
+  palletCbm: null,
   status: '0',
   remark: null
 });
@@ -128,6 +129,7 @@ function resetModel() {
     city: null,
     addressLine: '',
     postalCode: null,
+    palletCbm: null,
     status: '0',
     remark: null
   };
@@ -165,6 +167,7 @@ watch(visible, async v => {
         city: props.editRow.city ?? null,
         addressLine: props.editRow.addressLine,
         postalCode: props.editRow.postalCode ?? null,
+        palletCbm: props.editRow.palletCbm ?? null,
         status: props.editRow.status,
         remark: props.editRow.remark ?? null
       };
@@ -222,6 +225,19 @@ watch(visible, async v => {
         </NFormItem>
         <NFormItem :label="$t('page.basic.platformWarehouse.postalCode')">
           <NInput v-model:value="model.postalCode" clearable :maxlength="20" />
+        </NFormItem>
+        <NFormItem :label="$t('page.basic.platformWarehouse.palletCbm')">
+          <NInputNumber
+            v-model:value="model.palletCbm"
+            class="w-full max-w-full"
+            :min="0"
+            :precision="4"
+            :show-button="false"
+            clearable
+            :placeholder="$t('page.basic.platformWarehouse.palletCbmPlaceholder')"
+          >
+            <template #suffix>m³</template>
+          </NInputNumber>
         </NFormItem>
         <NFormItem :label="$t('page.basic.platformWarehouse.status')">
           <NSwitch :value="model.status === '0'" @update:value="v => (model.status = v ? '0' : '1')">

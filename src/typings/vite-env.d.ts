@@ -120,6 +120,12 @@ declare namespace Env {
     readonly VITE_APP_RSA_PRIVATE_KEY?: string;
     readonly VITE_APP_WEBSOCKET: CommonType.YesOrNo;
     readonly VITE_APP_SSE: CommonType.YesOrNo;
+    /** WMS 导入现有库存：预览/确认请求超时（毫秒），见 `getWmsExistingImportRequestTimeoutMs`；`0` 为不限制 */
+    readonly VITE_WMS_EXISTING_IMPORT_TIMEOUT_MS?: string;
+    /** WMS 拆柜订单多文件导入「解析预览」POST 超时（毫秒），见 `getWmsDevanningImportPreviewTimeoutMs`；`0` 为不限制 */
+    readonly VITE_WMS_DEVANNING_IMPORT_PREVIEW_TIMEOUT_MS?: string;
+    /** 出库数据列表 GET 超时（毫秒），默认 120000 */
+    readonly VITE_WMS_OUTSTOCK_DATA_LIST_TIMEOUT_MS?: string;
   }
 }
 

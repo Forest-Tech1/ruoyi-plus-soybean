@@ -1,5 +1,6 @@
 import { useWebSocket } from '@vueuse/core';
 import { useNoticeStore } from '@/store/modules/notice';
+import { pushDriverCheckInNotice, tryParseDriverCheckInPush } from '@/utils/driver-check-in-notice';
 import { localStg } from './storage';
 
 /**
@@ -41,6 +42,15 @@ export const initWebSocket = (url: string) => {
     },
     onMessage: (_, e) => {
       if (e.data.indexOf('ping') > 0) {
+        return;
+      }
+      // 过滤默认“欢迎登录”演示公告（避免每次登录都提示）
+      if (String(e.data).includes('欢迎登录') && String(e.data).toLowerCase().includes('ruoyi')) {
+        return;
+      }
+      const checkInRecord = tryParseDriverCheckInPush(String(e.data));
+      if (checkInRecord) {
+        pushDriverCheckInNotice(checkInRecord);
         return;
       }
       useNoticeStore().addNotice({

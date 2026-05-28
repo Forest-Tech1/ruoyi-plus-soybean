@@ -1,6 +1,7 @@
 import { watch } from 'vue';
 import { useEventSource } from '@vueuse/core';
 import { useNoticeStore } from '@/store/modules/notice';
+import { pushDriverCheckInNotice, tryParseDriverCheckInPush } from '@/utils/driver-check-in-notice';
 import { $t } from '@/locales';
 import { localStg } from './storage';
 
@@ -37,6 +38,17 @@ export const initSSE = (url: string) => {
 
   watch(data, () => {
     if (!data.value) return;
+    // 过滤默认“欢迎登录”演示公告（避免每次登录都提示）
+    if (String(data.value).includes('欢迎登录') && String(data.value).toLowerCase().includes('ruoyi')) {
+      data.value = null;
+      return;
+    }
+    const checkInRecord = tryParseDriverCheckInPush(String(data.value));
+    if (checkInRecord) {
+      pushDriverCheckInNotice(checkInRecord);
+      data.value = null;
+      return;
+    }
     useNoticeStore().addNotice({
       message: data.value,
       read: false,

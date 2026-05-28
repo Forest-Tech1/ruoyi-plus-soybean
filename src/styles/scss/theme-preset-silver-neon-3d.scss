@@ -1,0 +1,476 @@
+/**
+ * 「银灰霓虹 3D」主题预设：依赖 html 上的类名 `theme-preset-silver-neon-3d`
+ * （由应用预设时写入，见 `src/utils/theme-preset-html.ts`）
+ */
+
+html.theme-preset-silver-neon-3d:not(.dark) {
+  /* 主背景：银灰渐变（覆盖 Uno 的 bg-layout 单色） */
+  .bg-layout {
+    background: linear-gradient(
+      165deg,
+      #eef1f5 0%,
+      #d3dae3 36%,
+      #e8ecf1 68%,
+      #c4ccd8 100%
+    ) !important;
+    background-attachment: fixed;
+  }
+
+  /* 内容区卡片：浮雕 + 轻微外发光 */
+  .card-wrapper.n-card,
+  .n-card.card-wrapper {
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.75) inset,
+      0 -10px 28px rgba(15, 23, 42, 0.06) inset,
+      0 14px 36px rgba(15, 23, 42, 0.12),
+      0 0 0 1px rgba(148, 163, 184, 0.35),
+      0 0 28px rgba(56, 189, 248, 0.12);
+  }
+
+  /* 顶栏 / 标签栏：略强立体感 */
+  .bg-container {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.65) inset,
+      0 10px 26px rgba(15, 23, 42, 0.08);
+  }
+
+  /* ---------- 侧栏菜单（路由菜单） ---------- */
+  .shadow-sider {
+    background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 48%, #d8dee8 100%) !important;
+    box-shadow:
+      inset -1px 0 0 rgba(255, 255, 255, 0.55),
+      4px 0 22px rgba(15, 23, 42, 0.1),
+      0 0 24px rgba(56, 189, 248, 0.06) !important;
+  }
+
+  /* 纵向 / 侧栏 NMenu：条目浮雕 + 选中霓虹 */
+  .n-menu {
+    --n-item-border-radius: 10px !important;
+  }
+
+  .n-menu .n-menu-item-content {
+    margin-inline: 8px;
+    margin-block: 3px;
+    border-radius: 10px;
+    transition:
+      box-shadow 0.2s ease,
+      transform 0.15s ease,
+      background 0.2s ease;
+  }
+
+  /* 纵向侧栏：仅根级菜单项使用 3D；展开子列表见下方「子菜单扁平」 */
+  .n-menu:not(.n-menu--horizontal):not(.n-menu--inverted)
+    > .n-menu-item:not(.n-menu-item--disabled):not(.n-menu-item--selected):not(.n-menu-item--child-active)
+    .n-menu-item-content,
+  .n-menu:not(.n-menu--horizontal):not(.n-menu--inverted)
+    > .n-submenu > .n-menu-item:not(.n-menu-item--disabled):not(.n-menu-item--selected):not(.n-menu-item--child-active)
+    .n-menu-item-content {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(226, 232, 240, 0.9)) !important;
+    border: 1px solid rgba(148, 163, 184, 0.48);
+    box-shadow:
+      0 2px 0 rgba(255, 255, 255, 0.92) inset,
+      0 -3px 8px rgba(15, 23, 42, 0.05) inset,
+      0 3px 0 rgba(148, 163, 184, 0.38),
+      0 6px 12px rgba(15, 23, 42, 0.08),
+      0 0 8px rgba(56, 189, 248, 0.08) !important;
+  }
+
+  .n-menu:not(.n-menu--inverted) .n-menu-item:not(.n-menu-item--disabled) .n-menu-item-content:hover {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(226, 232, 240, 0.95)) !important;
+    box-shadow:
+      0 2px 0 rgba(255, 255, 255, 0.85) inset,
+      0 6px 14px rgba(15, 23, 42, 0.08),
+      0 0 12px rgba(56, 189, 248, 0.18) !important;
+    transform: translateY(-1px);
+  }
+
+  .n-menu:not(.n-menu--inverted) .n-menu-item--selected .n-menu-item-content,
+  .n-menu:not(.n-menu--inverted) .n-menu-item--child-active .n-menu-item-content {
+    background: linear-gradient(180deg, rgba(224, 242, 254, 0.98), rgba(186, 230, 253, 0.88)) !important;
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.75) inset,
+      0 4px 0 rgba(14, 165, 233, 0.22),
+      0 0 18px rgba(56, 189, 248, 0.42) !important;
+  }
+
+  /* 侧栏内展开的子菜单列表：扁平，无 3D 浮雕 */
+  .n-menu:not(.n-menu--horizontal):not(.n-menu--inverted) .n-submenu-children .n-menu-item:not(.n-menu-item--disabled):not(
+      .n-menu-item--selected
+    ):not(.n-menu-item--child-active) .n-menu-item-content {
+    background: rgba(248, 250, 252, 0.48) !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .n-menu:not(.n-menu--horizontal):not(.n-menu--inverted)
+    .n-submenu-children
+    .n-menu-item:not(.n-menu-item--disabled)
+    .n-menu-item-content:hover {
+    background: rgba(241, 245, 249, 0.82) !important;
+    border: 1px solid rgba(148, 163, 184, 0.28) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .n-menu:not(.n-menu--horizontal):not(.n-menu--inverted) .n-submenu-children .n-menu-item--selected .n-menu-item-content,
+  .n-menu:not(.n-menu--horizontal):not(.n-menu--inverted) .n-submenu-children .n-menu-item--child-active .n-menu-item-content {
+    background: rgba(224, 242, 254, 0.9) !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  /* 折叠侧栏 / 顶栏横向：NDropdown 弹出菜单扁平（避免继承厚重阴影） */
+  .n-dropdown-menu .n-dropdown-option .n-dropdown-option-body {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  /* 顶栏横向菜单（路由） */
+  .n-menu.n-menu--horizontal .n-menu-item-content {
+    margin-inline: 4px;
+    border-radius: 10px;
+  }
+
+  .n-menu.n-menu--horizontal:not(.n-menu--inverted)
+    .n-menu-item:not(.n-menu-item--disabled):not(.n-menu-item--selected):not(.n-menu-item--child-active)
+    .n-menu-item-content {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(226, 232, 240, 0.9)) !important;
+    border: 1px solid rgba(148, 163, 184, 0.42);
+    box-shadow:
+      0 2px 0 rgba(255, 255, 255, 0.9) inset,
+      0 -2px 6px rgba(15, 23, 42, 0.04) inset,
+      0 2px 0 rgba(148, 163, 184, 0.35),
+      0 5px 10px rgba(15, 23, 42, 0.07),
+      0 0 6px rgba(56, 189, 248, 0.07) !important;
+  }
+
+  .n-menu.n-menu--horizontal:not(.n-menu--inverted) .n-menu-item:not(.n-menu-item--disabled) .n-menu-item-content:hover {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(226, 232, 240, 0.92)) !important;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.75) inset,
+      0 4px 12px rgba(15, 23, 42, 0.08),
+      0 0 12px rgba(56, 189, 248, 0.2) !important;
+  }
+
+  /* 深色侧栏（inverted）：根级 3D 压铸 */
+  .n-menu.n-menu--inverted:not(.n-menu--horizontal) > .n-menu-item:not(.n-menu-item--disabled):not(
+      .n-menu-item--selected
+    ):not(.n-menu-item--child-active) .n-menu-item-content,
+  .n-menu.n-menu--inverted:not(.n-menu--horizontal) > .n-submenu > .n-menu-item:not(.n-menu-item--disabled):not(
+      .n-menu-item--selected
+    ):not(.n-menu-item--child-active) .n-menu-item-content {
+    background: linear-gradient(180deg, rgba(51, 65, 85, 0.92), rgba(30, 41, 59, 0.98)) !important;
+    border: 1px solid rgba(100, 116, 139, 0.35);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.1) inset,
+      0 -3px 10px rgba(0, 0, 0, 0.35) inset,
+      0 2px 0 rgba(15, 23, 42, 0.55),
+      0 5px 14px rgba(0, 0, 0, 0.28) !important;
+  }
+
+  .n-menu.n-menu--inverted:not(.n-menu--horizontal) .n-submenu-children .n-menu-item:not(.n-menu-item--disabled):not(
+      .n-menu-item--selected
+    ):not(.n-menu-item--child-active) .n-menu-item-content {
+    background: rgba(15, 23, 42, 0.32) !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .n-menu.n-menu--inverted:not(.n-menu--horizontal)
+    .n-submenu-children
+    .n-menu-item:not(.n-menu-item--disabled)
+    .n-menu-item-content:hover {
+    background: rgba(30, 41, 59, 0.58) !important;
+    border: 1px solid rgba(100, 116, 139, 0.22) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .n-menu.n-menu--inverted:not(.n-menu--horizontal) .n-submenu-children .n-menu-item--selected .n-menu-item-content,
+  .n-menu.n-menu--inverted:not(.n-menu--horizontal) .n-submenu-children .n-menu-item--child-active .n-menu-item-content {
+    background: rgba(14, 165, 233, 0.2) !important;
+    border: 1px solid rgba(56, 189, 248, 0.38) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  /* 深色侧栏（inverted）上的霓虹描边 */
+  .n-menu.n-menu--inverted .n-menu-item:not(.n-menu-item--disabled) .n-menu-item-content:hover {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.12) inset,
+      0 0 18px rgba(56, 189, 248, 0.28) !important;
+  }
+
+  .n-menu.n-menu--inverted .n-menu-item--selected .n-menu-item-content,
+  .n-menu.n-menu--inverted .n-menu-item--child-active .n-menu-item-content {
+    box-shadow:
+      0 0 0 1px rgba(125, 211, 252, 0.45),
+      0 0 20px rgba(56, 189, 248, 0.35) !important;
+  }
+
+  .n-menu.n-menu--inverted .n-submenu-children .n-menu-item--selected .n-menu-item-content,
+  .n-menu.n-menu--inverted .n-submenu-children .n-menu-item--child-active .n-menu-item-content {
+    box-shadow: none !important;
+  }
+
+  /* ---------- 顶栏（含面包屑「路由」） ---------- */
+  .shadow-header {
+    background: linear-gradient(180deg, #f8fafc 0%, #e8edf3 100%) !important;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.7) inset,
+      0 10px 24px rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .n-breadcrumb .n-breadcrumb-item .n-breadcrumb-item__link {
+    padding: 4px 10px;
+    border-radius: 8px;
+    transition:
+      box-shadow 0.2s ease,
+      background 0.2s ease;
+  }
+
+  .n-breadcrumb .n-breadcrumb-item .n-breadcrumb-item__link:hover {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(226, 232, 240, 0.85)) !important;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.75) inset,
+      0 4px 12px rgba(15, 23, 42, 0.07),
+      0 0 10px rgba(56, 189, 248, 0.22) !important;
+  }
+
+  /* ---------- 多页签（路由标签） ---------- */
+  .shadow-tab {
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(203, 213, 225, 0.72)) !important;
+    border-block: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow:
+      0 -8px 20px rgba(15, 23, 42, 0.05) inset,
+      0 10px 22px rgba(15, 23, 42, 0.07) !important;
+  }
+
+  /* PageTab 外层（materials 使用 :soy: 与 CSS module，用属性选择器兜底） */
+  .shadow-tab [class*='chrome-tab'],
+  .shadow-tab [class*='slider-tab'],
+  .shadow-tab [class*='button-tab'] {
+    filter: drop-shadow(0 6px 10px rgba(15, 23, 42, 0.12));
+  }
+
+  /* ---------- 表格（列表路由页） ---------- */
+  .n-data-table-wrapper,
+  .n-data-table-base {
+    border-radius: 12px;
+  }
+
+  .n-data-table {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.65) inset,
+      0 12px 32px rgba(15, 23, 42, 0.1),
+      0 0 0 1px rgba(148, 163, 184, 0.35),
+      0 0 22px rgba(56, 189, 248, 0.08) !important;
+  }
+
+  .n-data-table .n-data-table-td {
+    background: rgba(252, 253, 255, 0.94);
+    transition: background 0.2s ease;
+  }
+
+  .n-data-table .n-data-table-tr:not(.n-data-table-tr--summary):hover .n-data-table-td {
+    background: linear-gradient(90deg, rgba(224, 242, 254, 0.45), rgba(255, 255, 255, 0.75)) !important;
+  }
+
+  .n-data-table .n-data-table-border-cell .n-data-table-td {
+    border-color: rgba(148, 163, 184, 0.35) !important;
+  }
+
+  .n-pagination {
+    margin-top: 12px;
+    padding: 8px 4px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(226, 232, 240, 0.55));
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.85) inset,
+      0 6px 16px rgba(15, 23, 42, 0.06);
+  }
+
+  /* 主内容滚动区（路由页面容器） */
+  #__SCROLL_EL_ID__ {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.15), transparent 120px);
+  }
+
+  /* 主按钮：浅蓝渐变 + 霓虹外光 + 3D 按压 */
+  .n-button.n-button--primary-type:not(.n-button--disabled):not(.n-button--text) {
+    background: linear-gradient(180deg, #7dd3fc 0%, #4db5f5 42%, #24a5ed 100%) !important;
+    border: 1px solid rgba(186, 230, 253, 0.92) !important;
+    color: #fff !important;
+    box-shadow:
+      0 2px 0 rgba(255, 255, 255, 0.5) inset,
+      0 6px 0 rgba(14, 120, 185, 0.42),
+      0 12px 28px rgba(56, 189, 248, 0.38),
+      0 0 22px rgba(125, 211, 252, 0.55) !important;
+    transform: translateY(-1px);
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .n-button.n-button--primary-type:not(.n-button--disabled):not(.n-button--text):hover {
+    box-shadow:
+      0 2px 0 rgba(255, 255, 255, 0.58) inset,
+      0 5px 0 rgba(14, 120, 185, 0.38),
+      0 14px 34px rgba(56, 189, 248, 0.48),
+      0 0 28px rgba(186, 230, 253, 0.75) !important;
+  }
+
+  .n-button.n-button--primary-type:not(.n-button--disabled):not(.n-button--text):active {
+    transform: translateY(2px);
+    box-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.1) inset,
+      0 2px 0 rgba(14, 120, 185, 0.35),
+      0 6px 16px rgba(56, 189, 248, 0.32) !important;
+  }
+
+  /* 次要实心按钮：金属感 */
+  .n-button.n-button--default-type:not(.n-button--disabled):not(.n-button--text):not(.n-button--quaternary) {
+    background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%) !important;
+    border: 1px solid rgba(148, 163, 184, 0.65) !important;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.9) inset,
+      0 4px 0 rgba(148, 163, 184, 0.45),
+      0 8px 18px rgba(15, 23, 42, 0.1) !important;
+  }
+
+  /* 表格标题：轻微荧光描边 */
+  .n-data-table .n-data-table-th {
+    text-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(226, 232, 240, 0.95)) !important;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  }
+
+  /* 主色文字链接：荧光感 */
+  .text-primary,
+  a.text-primary {
+    text-shadow: 0 0 10px rgba(14, 165, 233, 0.45);
+  }
+}
+
+html.theme-preset-silver-neon-3d.dark {
+  .bg-layout {
+    background: linear-gradient(165deg, #1e293b 0%, #0f172a 50%, #172554 100%) !important;
+    background-attachment: fixed;
+  }
+
+  .shadow-sider {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 55%, #172554 100%) !important;
+    box-shadow:
+      inset -1px 0 0 rgba(255, 255, 255, 0.06),
+      4px 0 26px rgba(0, 0, 0, 0.45),
+      0 0 28px rgba(56, 189, 248, 0.12) !important;
+  }
+
+  .shadow-header {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 12px 28px rgba(0, 0, 0, 0.35) !important;
+  }
+
+  .shadow-tab {
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.92)) !important;
+    border-block-color: rgba(148, 163, 184, 0.2);
+    box-shadow:
+      0 -8px 20px rgba(0, 0, 0, 0.35) inset,
+      0 10px 24px rgba(0, 0, 0, 0.35) !important;
+  }
+
+  .n-data-table {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 12px 32px rgba(0, 0, 0, 0.45),
+      0 0 0 1px rgba(56, 189, 248, 0.18),
+      0 0 22px rgba(56, 189, 248, 0.12) !important;
+  }
+
+  .n-data-table .n-data-table-td {
+    background: rgba(30, 41, 59, 0.65);
+  }
+
+  .n-data-table .n-data-table-tr:not(.n-data-table-tr--summary):hover .n-data-table-td {
+    background: linear-gradient(90deg, rgba(14, 165, 233, 0.12), rgba(30, 41, 59, 0.75)) !important;
+  }
+
+  /* 暗色全局：纵向菜单根级 3D；子列表扁平 */
+  .n-menu:not(.n-menu--horizontal):not(.n-menu--inverted) > .n-menu-item:not(.n-menu-item--disabled):not(
+      .n-menu-item--selected
+    ):not(.n-menu-item--child-active) .n-menu-item-content,
+  .n-menu:not(.n-menu--horizontal):not(.n-menu--inverted) > .n-submenu > .n-menu-item:not(.n-menu-item--disabled):not(
+      .n-menu-item--selected
+    ):not(.n-menu-item--child-active) .n-menu-item-content {
+    background: linear-gradient(180deg, rgba(51, 65, 85, 0.55), rgba(30, 41, 59, 0.82)) !important;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.07) inset,
+      0 -3px 10px rgba(0, 0, 0, 0.25) inset,
+      0 2px 0 rgba(15, 23, 42, 0.65),
+      0 6px 14px rgba(0, 0, 0, 0.3),
+      0 0 6px rgba(56, 189, 248, 0.06) !important;
+  }
+
+  .n-menu:not(.n-menu--horizontal):not(.n-menu--inverted) .n-submenu-children .n-menu-item:not(.n-menu-item--disabled):not(
+      .n-menu-item--selected
+    ):not(.n-menu-item--child-active) .n-menu-item-content {
+    background: rgba(30, 41, 59, 0.42) !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .n-menu:not(.n-menu--horizontal):not(.n-menu--inverted)
+    .n-submenu-children
+    .n-menu-item:not(.n-menu-item--disabled)
+    .n-menu-item-content:hover {
+    background: rgba(51, 65, 85, 0.55) !important;
+    border: 1px solid rgba(100, 116, 139, 0.22) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .n-menu:not(.n-menu--horizontal):not(.n-menu--inverted) .n-submenu-children .n-menu-item--selected .n-menu-item-content,
+  .n-menu:not(.n-menu--horizontal):not(.n-menu--inverted) .n-submenu-children .n-menu-item--child-active .n-menu-item-content {
+    background: rgba(14, 165, 233, 0.16) !important;
+    border: 1px solid rgba(56, 189, 248, 0.32) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .n-dropdown-menu .n-dropdown-option .n-dropdown-option-body {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .n-menu .n-menu-item--selected .n-menu-item-content,
+  .n-menu .n-menu-item--child-active .n-menu-item-content {
+    box-shadow:
+      0 0 0 1px rgba(125, 211, 252, 0.35),
+      0 0 22px rgba(56, 189, 248, 0.28) !important;
+  }
+
+  .n-menu .n-submenu-children .n-menu-item--selected .n-menu-item-content,
+  .n-menu .n-submenu-children .n-menu-item--child-active .n-menu-item-content {
+    box-shadow: none !important;
+  }
+
+  .n-button.n-button--primary-type:not(.n-button--disabled):not(.n-button--text) {
+    background: linear-gradient(180deg, #53c6fc 0%, #2aabf2 45%, #1f8fd8 100%) !important;
+    border: 1px solid rgba(125, 211, 252, 0.45) !important;
+    color: #fff !important;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.22) inset,
+      0 6px 0 rgba(8, 90, 140, 0.55),
+      0 0 24px rgba(56, 189, 248, 0.4) !important;
+  }
+}

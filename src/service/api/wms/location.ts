@@ -17,6 +17,18 @@ export function fetchGetWarehouseLocationDetail(id: CommonType.IdType) {
   });
 }
 
+/** 库位详情 - 现有库存明细（入库计划维度） */
+export function fetchGetWarehouseLocationInventoryDetailList(
+  locationId: CommonType.IdType,
+  params?: Pick<Api.Common.CommonSearchParams, 'pageNum' | 'pageSize'>
+) {
+  return request<Api.Wms.WarehouseLocationInventoryDetailList>({
+    url: `/wms/inventory/location/${locationId}/inventory-detail`,
+    method: 'get',
+    params
+  });
+}
+
 /** 新增库位 */
 export function fetchCreateWarehouseLocation(data: Api.Wms.WarehouseLocationOperateParams) {
   return request<boolean>({

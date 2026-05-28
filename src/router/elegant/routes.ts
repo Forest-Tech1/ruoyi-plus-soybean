@@ -103,6 +103,16 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'driver-check-in',
+    path: '/driver-check-in',
+    component: 'layout.blank$view.driver-check-in',
+    meta: {
+      title: 'driver-check-in',
+      i18nKey: 'route.driver-check-in',
+      constant: true
+    }
+  },
+  {
     name: 'home',
     path: '/home',
     component: 'layout.base$view.home',
@@ -384,7 +394,7 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'wms_devanning-order',
           i18nKey: 'route.wms_devanning-order',
-          icon: 'material-symbols:inventory-2-outline'
+          hideInMenu: true
         }
       },
       {
@@ -418,6 +428,117 @@ export const generatedRoutes: GeneratedRoute[] = [
         ]
       },
       {
+        name: 'wms_order',
+        path: '/wms/order',
+        meta: {
+          title: 'wms_order',
+          i18nKey: 'route.wms_order'
+        },
+        children: [
+          {
+            name: 'wms_order_cargo-inbound-plan',
+            path: '/wms/order/cargo-inbound-plan',
+            component: 'view.wms_order_cargo-inbound-plan',
+            meta: {
+              title: 'wms_order_cargo-inbound-plan',
+              i18nKey: 'route.wms_order_cargo-inbound-plan'
+            }
+          },
+          {
+            name: 'wms_order_devanning-order',
+            path: '/wms/order/devanning-order',
+            component: 'view.wms_order_devanning-order',
+            meta: {
+              title: 'wms_order_devanning-order',
+              i18nKey: 'route.wms_order_devanning-order'
+            }
+          },
+          {
+            name: 'wms_order_driver-check-in-record',
+            path: '/wms/order/driver-check-in-record',
+            component: 'view.wms_order_driver-check-in-record',
+            meta: {
+              title: 'wms_order_driver-check-in-record',
+              i18nKey: 'route.wms_order_driver-check-in-record'
+            }
+          },
+          {
+            name: 'wms_order_import-inventory',
+            path: '/wms/order/import-inventory',
+            component: 'view.wms_order_import-inventory',
+            meta: {
+              title: 'wms_order_import-inventory',
+              i18nKey: 'route.wms_order_import-inventory'
+            }
+          },
+          {
+            name: 'wms_order_inventory-data',
+            path: '/wms/order/inventory-data',
+            component: 'view.wms_order_inventory-data',
+            meta: {
+              title: 'wms_order_inventory-data',
+              i18nKey: 'route.wms_order_inventory-data'
+            }
+          },
+          {
+            name: 'wms_order_inventory-data-dashboard',
+            path: '/wms/order/inventory-data-dashboard',
+            component: 'view.wms_order_inventory-data-dashboard',
+            meta: {
+              title: 'wms_order_inventory-data-dashboard',
+              i18nKey: 'route.wms_order_inventory-data-dashboard'
+            }
+          },
+          {
+            name: 'wms_order_outstock-data',
+            path: '/wms/order/outstock-data',
+            component: 'view.wms_order_outstock-data',
+            meta: {
+              title: 'wms_order_outstock-data',
+              i18nKey: 'route.wms_order_outstock-data'
+            }
+          },
+          {
+            name: 'wms_order_outstock-exception',
+            path: '/wms/order/outstock-exception',
+            component: 'view.wms_order_outstock-exception',
+            meta: {
+              title: 'wms_order_outstock-exception',
+              i18nKey: 'route.wms_order_outstock-exception'
+            }
+          },
+          {
+            name: 'wms_order_park-management',
+            path: '/wms/order/park-management',
+            component: 'view.wms_order_park-management',
+            meta: {
+              title: 'wms_order_park-management',
+              i18nKey: 'route.wms_order_park-management',
+              icon: 'material-symbols:settings-outline'
+            }
+          },
+          {
+            name: 'wms_order_park-scheduling',
+            path: '/wms/order/park-scheduling',
+            component: 'view.wms_order_park-scheduling',
+            meta: {
+              title: 'wms_order_park-scheduling',
+              i18nKey: 'route.wms_order_park-scheduling',
+              icon: 'material-symbols:view-week-outline'
+            }
+          },
+          {
+            name: 'wms_order_warehouse-inventory-map',
+            path: '/wms/order/warehouse-inventory-map',
+            component: 'view.wms_order_warehouse-inventory-map',
+            meta: {
+              title: 'wms_order_warehouse-inventory-map',
+              i18nKey: 'route.wms_order_warehouse-inventory-map'
+            }
+          }
+        ]
+      },
+      {
         name: 'wms_warehouse',
         path: '/wms/warehouse',
         meta: {
@@ -440,6 +561,24 @@ export const generatedRoutes: GeneratedRoute[] = [
                 meta: {
                   title: 'wms_warehouse_settings_location',
                   i18nKey: 'route.wms_warehouse_settings_location'
+                }
+              },
+              {
+                name: 'wms_warehouse_settings_prelocation-exception-log',
+                path: '/wms/warehouse/settings/prelocation-exception-log',
+                component: 'view.wms_warehouse_settings_prelocation-exception-log',
+                meta: {
+                  title: 'wms_warehouse_settings_prelocation-exception-log',
+                  i18nKey: 'route.wms_warehouse_settings_prelocation-exception-log'
+                }
+              },
+              {
+                name: 'wms_warehouse_settings_putaway-config',
+                path: '/wms/warehouse/settings/putaway-config',
+                component: 'view.wms_warehouse_settings_putaway-config',
+                meta: {
+                  title: 'wms_warehouse_settings_putaway-config',
+                  i18nKey: 'route.wms_warehouse_settings_putaway-config'
                 }
               },
               {

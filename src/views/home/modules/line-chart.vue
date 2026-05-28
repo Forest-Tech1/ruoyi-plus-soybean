@@ -21,7 +21,7 @@ const { domRef, updateOptions } = useEcharts(() => ({
     }
   },
   legend: {
-    data: [$t('page.home.downloadCount'), $t('page.home.registerCount')],
+    data: [$t('page.home.inboundQty'), $t('page.home.outboundQty')],
     top: '0'
   },
   grid: {
@@ -41,10 +41,9 @@ const { domRef, updateOptions } = useEcharts(() => ({
   series: [
     {
       color: '#8e9dff',
-      name: $t('page.home.downloadCount'),
+      name: $t('page.home.inboundQty'),
       type: 'line',
       smooth: true,
-      stack: 'Total',
       areaStyle: {
         color: {
           type: 'linear',
@@ -71,10 +70,9 @@ const { domRef, updateOptions } = useEcharts(() => ({
     },
     {
       color: '#26deca',
-      name: $t('page.home.registerCount'),
+      name: $t('page.home.outboundQty'),
       type: 'line',
       smooth: true,
-      stack: 'Total',
       areaStyle: {
         color: {
           type: 'linear',
@@ -109,8 +107,8 @@ async function mockData() {
 
   updateOptions(opts => {
     opts.xAxis.data = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00', '24:00'];
-    opts.series[0].data = [4623, 6145, 6268, 6411, 1890, 4251, 2978, 3880, 3606, 4311];
-    opts.series[1].data = [2208, 2016, 2916, 4512, 8281, 2008, 1963, 2367, 2956, 678];
+    opts.series[0].data = [320, 410, 380, 520, 490, 610, 540, 580, 620, 590];
+    opts.series[1].data = [180, 260, 220, 310, 290, 340, 300, 320, 360, 330];
 
     return opts;
   });

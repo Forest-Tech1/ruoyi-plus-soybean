@@ -32,6 +32,8 @@ const { bool: importVisible, setTrue: openImport, setFalse: closeImport } = useB
 const searchParams = ref<Api.Wms.WarehouseLocationSearchParams>({
   pageNum: 1,
   pageSize: 10,
+  zoneCode: null,
+  locationKeyword: null,
   keyword: null,
   status: null,
   orderByColumn: 'createTime',
@@ -78,13 +80,19 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
         key: 'rowRank',
         title: $t('page.wms.inventory.location.rowRank'),
         align: 'center',
-        width: 88
+        width: 72,
+        render(row) {
+          return row.rowRank != null ? row.rowRank : '—';
+        }
       },
       {
         key: 'columnRank',
         title: $t('page.wms.inventory.location.columnRank'),
         align: 'center',
-        width: 88
+        width: 72,
+        render(row) {
+          return row.columnRank != null ? row.columnRank : '—';
+        }
       },
       {
         key: 'capacity',

@@ -33,6 +33,7 @@ import { defaultTransform, useNaivePaginatedTable } from '@/hooks/common/table';
 import { $t } from '@/locales';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 import PlatformOperateDrawer from './modules/platform-operate-drawer.vue';
+import PlatformWarehouseImportModal from './modules/platform-warehouse-import-modal.vue';
 import WarehouseOperateDrawer from './modules/warehouse-operate-drawer.vue';
 import WarehouseDetailDrawer from './modules/warehouse-detail-drawer.vue';
 
@@ -43,6 +44,32 @@ defineOptions({
 const appStore = useAppStore();
 const { hasAuth } = useAuth();
 const { download } = useDownload();
+
+/** 列表「详细地址」列：街道在前，其次城市，最后州/省（与业务阅读习惯一致） */
+function warehouseAddressLineDisplay(row: Api.Basic.PlatformWarehouse) {
+  return [row.addressLine, row.city, row.stateProvince].filter(Boolean).join(' ');
+}
+
+/** 国家展示：已知 ISO2 时只用字典国名，避免后端 countryName 出现「us United States」等与代码重复 */
+function warehousePalletCbmDisplay(row: Api.Basic.PlatformWarehouse) {
+  const v = row.palletCbm;
+  if (v == null) return '—';
+  const n = Number(v);
+  if (!Number.isFinite(n)) return '—';
+  return String(n);
+}
+
+function warehouseCountryDisplay(row: Api.Basic.PlatformWarehouse) {
+  const raw = (row.countryCode ?? '').trim();
+  const codeUpper = raw.toUpperCase();
+  if (COUNTRY_OPTIONS.some(c => c.code === codeUpper)) {
+    return getCountryLabel(codeUpper, appStore.locale);
+  }
+  const name = row.countryName?.trim();
+  if (name) return name;
+  if (raw) return raw;
+  return '—';
+}
 
 const platforms = ref<Api.Basic.Platform[]>([]);
 const selectedPlatformId = ref<CommonType.IdType | null>(null);
@@ -57,6 +84,8 @@ const { bool: warehouseDrawerVisible, setTrue: openWarehouseDrawer } = useBoolea
 const warehouseEditRow = ref<Api.Basic.PlatformWarehouse | null>(null);
 
 const { bool: detailVisible, setTrue: openDetail } = useBoolean();
+
+const { bool: warehouseImportVisible, setTrue: openWarehouseImport } = useBoolean();
 const detailWarehouseId = ref<CommonType.IdType | null>(null);
 
 const checkedRowKeys = ref<DataTableRowKey[]>([]);
@@ -128,6 +157,9 @@ function selectPlatform(id: CommonType.IdType) {
 }
 
 const { columns, data, getDataByPage, loading, mobilePagination, scrollX } = useNaivePaginatedTable({
+  paginationProps: {
+    pageSizes: [10, 30, 50, 100, 300, 500]
+  },
   api: () => {
     if (selectedPlatformId.value == null) {
       return Promise.resolve({
@@ -197,14 +229,21 @@ const { columns, data, getDataByPage, loading, mobilePagination, scrollX } = use
     {
       key: 'country',
       title: $t('page.basic.platformWarehouse.country'),
-      width: 100,
+      minWidth: 148,
+      width: 160,
       align: 'left',
-      render: row => (
-        <span class="inline-flex items-center gap-4px whitespace-nowrap">
-          <span class="text-16px">{countryFlagEmoji(row.countryCode)}</span>
-          <span>{row.countryName || getCountryLabel(row.countryCode, appStore.locale)}</span>
-        </span>
-      )
+      ellipsis: { tooltip: true },
+      render: row => {
+        const text = warehouseCountryDisplay(row);
+        return (
+          <div class="flex max-w-full min-w-0 items-center gap-6px">
+            <span class="shrink-0 text-16px leading-none">{countryFlagEmoji(row.countryCode)}</span>
+            <span class="min-w-0 flex-1 truncate" title={text === '—' ? undefined : text}>
+              {text}
+            </span>
+          </div>
+        );
+      }
     },
     {
       key: 'address',
@@ -212,13 +251,21 @@ const { columns, data, getDataByPage, loading, mobilePagination, scrollX } = use
       minWidth: 220,
       align: 'left',
       ellipsis: { tooltip: true },
-      render: row => [row.stateProvince, row.city, row.addressLine].filter(Boolean).join(' ')
+      render: row => warehouseAddressLineDisplay(row)
     },
     {
       key: 'postalCode',
       title: $t('page.basic.platformWarehouse.postalCode'),
       width: 90,
       align: 'left'
+    },
+    {
+      key: 'palletCbm',
+      title: $t('page.basic.platformWarehouse.palletCbm'),
+      width: 100,
+      align: 'right',
+      ellipsis: { tooltip: true },
+      render: row => warehousePalletCbmDisplay(row)
     },
     {
       key: 'status',
@@ -429,12 +476,21 @@ function onWarehouseSubmitted() {
   loadPlatforms();
   getDataByPage();
 }
+
+function onWarehouseImportSubmitted() {
+  loadPlatforms();
+  getDataByPage();
+}
 </script>
 
 <template>
-  <div class="h-full min-h-0 flex flex-col gap-16px overflow-hidden">
-    <NCard :bordered="false" class="card-wrapper flex-1 overflow-hidden">
-      <div class="mb-16px flex items-center justify-between gap-12px">
+  <div class="h-full min-h-500px flex flex-col gap-16px overflow-hidden lt-sm:overflow-auto">
+    <NCard
+      :bordered="false"
+      class="card-wrapper flex min-h-0 flex-1 flex-col overflow-hidden sm:flex-1-hidden"
+      content-class="flex min-h-0 flex-1 flex-col overflow-hidden"
+    >
+      <div class="mb-16px shrink-0 flex items-center justify-between gap-12px">
         <span class="text-18px font-600">{{ $t('page.basic.platformWarehouse.title') }}</span>
         <NButton v-if="hasAuth('basic:platform:add')" type="primary" @click="openAddPlatform">
           <template #icon>
@@ -447,7 +503,7 @@ function onWarehouseSubmitted() {
       <div class="flex min-h-0 flex-1 gap-16px overflow-hidden lt-md:flex-col">
         <!-- 左侧平台 -->
         <div
-          class="flex w-300px shrink-0 flex-col gap-12px overflow-hidden border border-gray-200 rounded-8px p-12px dark:border-gray-700 lt-md:w-full lt-md:max-h-280px"
+          class="flex min-h-0 w-300px shrink-0 flex-col gap-12px self-stretch overflow-hidden border border-gray-200 rounded-8px p-12px dark:border-gray-700 lt-md:w-full lt-md:max-h-280px lt-md:self-auto"
         >
           <div class="text-14px font-600">{{ $t('page.basic.platformWarehouse.platformList') }}</div>
           <NInput
@@ -465,7 +521,7 @@ function onWarehouseSubmitted() {
               <div
                 v-for="p in filteredPlatforms"
                 :key="String(p.id)"
-                class="relative cursor-pointer rounded-8px border-2 p-12px transition-colors"
+                class="cursor-pointer rounded-8px border-2 p-12px transition-colors"
                 :class="[
                   selectedPlatformId === p.id
                     ? 'border-primary bg-primary/5'
@@ -474,7 +530,7 @@ function onWarehouseSubmitted() {
                 ]"
                 @click="selectPlatform(p.id)"
               >
-                <div class="flex items-start justify-between gap-8px pr-24px">
+                <div class="flex items-start justify-between gap-10px">
                   <div class="min-w-0 flex-1">
                     <div class="truncate text-15px font-600">{{ p.platformName }}</div>
                     <div class="mt-4px font-mono text-12px text-gray-500">{{ p.platformCode }}</div>
@@ -486,26 +542,28 @@ function onWarehouseSubmitted() {
                             : $t('page.basic.platformWarehouse.disabled')
                         }}
                       </NTag>
+                      <NBadge
+                        v-if="p.warehouseCount != null"
+                        :value="p.warehouseCount"
+                        :max="99"
+                        :show-zero="false"
+                      />
                     </div>
                   </div>
-                  <NBadge
-                    v-if="p.warehouseCount != null"
-                    :value="p.warehouseCount"
-                    :max="99"
-                    class="absolute right-8px top-8px"
-                  />
+                  <div class="shrink-0 self-start pt-2px" @click.stop>
+                    <NDropdown
+                      v-if="platformMenuOptions(p).length"
+                      trigger="click"
+                      placement="bottom-end"
+                      :options="platformMenuOptions(p)"
+                      @select="k => onPlatformMenuSelect(String(k), p)"
+                    >
+                      <NButton quaternary circle size="tiny">
+                        <SvgIcon icon="material-symbols:more-horiz" class="text-18px" />
+                      </NButton>
+                    </NDropdown>
+                  </div>
                 </div>
-                <NDropdown
-                  v-if="platformMenuOptions(p).length"
-                  trigger="click"
-                  placement="bottom-end"
-                  :options="platformMenuOptions(p)"
-                  @select="k => onPlatformMenuSelect(String(k), p)"
-                >
-                  <NButton quaternary circle size="tiny" class="!absolute right-4px top-4px" @click.stop>
-                    <SvgIcon icon="material-symbols:more-horiz" class="text-18px" />
-                  </NButton>
-                </NDropdown>
               </div>
               <div
                 v-if="!platformLoading && platforms.length && !filteredPlatforms.length"
@@ -548,6 +606,14 @@ function onWarehouseSubmitted() {
             />
             <div class="ml-auto flex flex-wrap items-center gap-8px">
               <NButton
+                v-if="hasAuth('basic:warehouse:import')"
+                secondary
+                :disabled="!platforms.length"
+                @click="openWarehouseImport"
+              >
+                {{ $t('page.basic.platformWarehouse.importWarehouse') }}
+              </NButton>
+              <NButton
                 v-if="hasAuth('basic:warehouse:export')"
                 secondary
                 :disabled="!selectedPlatformId"
@@ -575,17 +641,18 @@ function onWarehouseSubmitted() {
             </NButton>
           </NSpace>
 
-          <div class="min-h-280px flex-1 overflow-hidden sm:min-h-0">
+          <div class="flex min-h-280px flex-1 flex-col overflow-hidden sm:min-h-0">
             <NDataTable
               v-model:checked-row-keys="checkedRowKeys"
               :columns="columns"
               :data="data"
               :loading="loading"
               flex-height
+              remote
               :scroll-x="scrollX"
               :row-key="row => row.id"
               :pagination="mobilePagination"
-              class="h-full"
+              class="min-h-0 flex-1 sm:h-full"
             />
           </div>
         </div>
@@ -605,5 +672,6 @@ function onWarehouseSubmitted() {
       @submitted="onWarehouseSubmitted"
     />
     <WarehouseDetailDrawer v-model:visible="detailVisible" :warehouse-id="detailWarehouseId" />
+    <PlatformWarehouseImportModal v-model:visible="warehouseImportVisible" @submitted="onWarehouseImportSubmitted" />
   </div>
 </template>

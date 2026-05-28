@@ -25,6 +25,7 @@ alwaysApply: true
 
 - **`src/components/**/*.vue`** 由 **`unplugin-vue-components`** 自动按需注册，并生成 **`src/typings/components.d.ts`**（勿手改该文件）。
 - **Naive UI**：同样自动注册，`NButton`、`NDataTable` 等可在模板直接使用；在 **`lang="tsx"`** 的 SFC 里若 TS 无法识别，可对用到的子组件 **显式 `import { Nx } from 'naive-ui'`**（与现有业务页一致）。
+- **`NDataTable` 有数据但表体空白**（常见于 `flex-height`、父级无高度）：见 **`.cursor/rules/naive-ui-datatable-layout.mdc`**，避免重复踩坑。
 - **模板中的组件名**：遵循 ESLint **`vue/component-name-in-template-casing: PascalCase`**；**`icon-*` 前缀** 为例外（小写），与 `registeredComponentsOnly: false` 一致。
 - **页面内局部模块**：同 feature 下的 `./modules/*.vue` 使用 **显式 import**，不要指望自动注册。
 - **`defineOptions({ name: 'Xxx' })`**：页面/重要组件需设 **`name`**，与路由或 KeepAlive 语义一致（多为 PascalCase）。

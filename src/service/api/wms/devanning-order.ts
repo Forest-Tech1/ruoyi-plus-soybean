@@ -1,3 +1,4 @@
+import { getWmsDevanningImportPreviewTimeoutMs } from '@/constants/wms-devanning';
 import { request } from '@/service/request';
 
 /** 拆柜订单分页列表 */
@@ -60,6 +61,15 @@ export function fetchUpdateDevanningOrderRemark(id: CommonType.IdType, remark: s
   });
 }
 
+/** 拆柜订单 - 更新附件（OSS id 列表） */
+export function fetchUpdateDevanningOrderAttachments(id: CommonType.IdType, ossIds: CommonType.IdType[]) {
+  return request<boolean>({
+    url: `/wms/devanning-order/${id}/attachments`,
+    method: 'put',
+    data: { ossIds }
+  });
+}
+
 /** 取消拆柜完成（回退为待拆柜等业务约定状态，以后端为准） */
 export function fetchCancelCompleteDevanningOrder(id: CommonType.IdType) {
   return request<boolean>({
@@ -96,10 +106,38 @@ export function fetchGetDevanningInboundPlanList(
   });
 }
 
+/**
+ * 入库计划跨单分页列表（货物订单页）
+ * @see docs/wms-cargo-inbound-plan-api.md
+ */
+export function fetchGetDevanningInboundPlanGlobalList(params: Api.Wms.DevanningInboundPlanGlobalSearchParams) {
+  return request<Api.Wms.DevanningInboundPlanList>({
+    url: '/wms/devanning-order/inbound-plan/list',
+    method: 'get',
+    params
+  });
+}
+
 /** 拆柜订单 - 入库计划修改 */
 export function fetchUpdateDevanningInboundPlan(data: Api.Wms.DevanningInboundPlanOperateParams) {
   return request<boolean>({
     url: '/wms/devanning-order/inbound-plan',
+    method: 'put',
+    data
+  });
+}
+
+/**
+ * 拆柜订单 - 仅更新入库计划「系统预库位」多库位分配（JSON 字符串）
+ * 对接约定见 `docs/wms-devanning-order-prelocation-api.md`
+ */
+export function fetchUpdateDevanningInboundPlanSystemPreLocation(data: {
+  id: CommonType.IdType;
+  orderId?: CommonType.IdType;
+  systemPreLocation: string;
+}) {
+  return request<boolean>({
+    url: '/wms/devanning-order/inbound-plan/system-pre-location',
     method: 'put',
     data
   });
@@ -113,20 +151,83 @@ export function fetchBatchDeleteDevanningInboundPlan(ids: CommonType.IdType[]) {
   });
 }
 
-/**
- * 多文件导入预览：每个文件解析为一条待创建订单，不落库。
- * multipart：`files` 重复追加多文件；`updateSupport` 文本 true/false。
- */
-export function fetchPreviewDevanningOrderImport(files: File[], updateSupport: boolean) {
+function buildDevanningImportFormData(files: File[], updateSupport: boolean) {
   const fd = new FormData();
   files.forEach(f => {
     fd.append('files', f);
   });
   fd.append('updateSupport', updateSupport ? 'true' : 'false');
+  return fd;
+}
+
+/**
+ * 多文件导入预览（标准派送模版 · 旧版表头）：定列读取，无脚本预处理。
+ * multipart：仅使用字段名 `files`；`updateSupport` 文本 true/false。
+ */
+export function fetchPreviewDevanningOrderImport(files: File[], updateSupport: boolean) {
   return request<Api.Wms.DevanningOrderImportPreviewResult>({
     url: '/wms/devanning-order/import-preview',
     method: 'post',
-    data: fd
+    data: buildDevanningImportFormData(files, updateSupport),
+    timeout: getWmsDevanningImportPreviewTimeoutMs()
+  });
+}
+
+/**
+ * 多文件导入预览（**导入订单 / Sheet2** 流程 · V2 表头）。
+ * multipart 与 `import-preview` 相同：`files`、`updateSupport`；响应结构同标准预览。
+ */
+export function fetchPreviewDevanningOrderImportV2(files: File[], updateSupport: boolean) {
+  return request<Api.Wms.DevanningOrderImportPreviewResult>({
+    url: '/wms/devanning-order/import-preview/v2',
+    method: 'post',
+    data: buildDevanningImportFormData(files, updateSupport),
+    timeout: getWmsDevanningImportPreviewTimeoutMs()
+  });
+}
+
+/**
+ * 标准派送 V2 表头 — 单文件直传落库（不经预览；与现网 `importData` 类接口一致时选用）。
+ * multipart：字段名 `file`；`updateSupport` 文本 true/false。
+ */
+export function fetchImportDevanningOrderDataV2(file: File, updateSupport: boolean) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('updateSupport', updateSupport ? 'true' : 'false');
+  return request<boolean>({
+    url: '/wms/devanning-order/importData/v2',
+    method: 'post',
+    data: fd,
+    headers: {
+      repeatSubmit: false
+    },
+    timeout: getWmsDevanningImportPreviewTimeoutMs()
+  });
+}
+
+/**
+ * 多文件导入预览（原始订单派送表）：表头映射 + 预处理后再解析，不落库。
+ * 响应结构与标准预览一致；确认落库仍走 {@link fetchConfirmDevanningOrderImport}。
+ */
+export function fetchPreviewDevanningOrderImportRawOrder(files: File[], updateSupport: boolean) {
+  return request<Api.Wms.DevanningOrderImportPreviewResult>({
+    url: '/wms/devanning-order/import-preview/raw-order',
+    method: 'post',
+    data: buildDevanningImportFormData(files, updateSupport),
+    timeout: getWmsDevanningImportPreviewTimeoutMs()
+  });
+}
+
+/**
+ * 多文件导入预览（原始订单 · 仅第二个工作表 Sheet2）：承运商/双地址/非 HOLD 同址合并等预处理后再解析，不落库。
+ * 响应结构与标准预览一致；确认落库仍走 {@link fetchConfirmDevanningOrderImport}。
+ */
+export function fetchPreviewDevanningOrderImportRawOrderSheet2(files: File[], updateSupport: boolean) {
+  return request<Api.Wms.DevanningOrderImportPreviewResult>({
+    url: '/wms/devanning-order/import-preview/raw-order-sheet2',
+    method: 'post',
+    data: buildDevanningImportFormData(files, updateSupport),
+    timeout: getWmsDevanningImportPreviewTimeoutMs()
   });
 }
 
@@ -135,6 +236,19 @@ export function fetchConfirmDevanningOrderImport(data: Api.Wms.DevanningOrderImp
   return request<boolean>({
     url: '/wms/devanning-order/import-confirm',
     method: 'post',
+    /** 避免与短时间内其它 POST 的重复提交守卫误判；大 Body 序列化校验见前端日志 */
+    headers: {
+      repeatSubmit: false
+    },
     data
+  });
+}
+
+/** 拆柜单导入库存明细分页（见 docs/wms-devanning-order-api.md §14.5） */
+export function fetchGetDevanningImportInventoryList(params?: Api.Wms.DevanningImportInventorySearchParams) {
+  return request<Api.Wms.DevanningImportInventoryList>({
+    url: '/wms/devanning-order/import-inventory/list',
+    method: 'get',
+    params
   });
 }

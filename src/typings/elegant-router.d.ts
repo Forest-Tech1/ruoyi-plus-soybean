@@ -30,6 +30,7 @@ declare module "@elegant-router/types" {
     "demo": "/demo";
     "demo_demo": "/demo/demo";
     "demo_tree": "/demo/tree";
+    "driver-check-in": "/driver-check-in";
     "home": "/home";
     "iframe-page": "/iframe-page/:url";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
@@ -61,9 +62,23 @@ declare module "@elegant-router/types" {
     "wms_inventory": "/wms/inventory";
     "wms_inventory_location": "/wms/inventory/location";
     "wms_inventory_warehouse-area": "/wms/inventory/warehouse-area";
+    "wms_order": "/wms/order";
+    "wms_order_cargo-inbound-plan": "/wms/order/cargo-inbound-plan";
+    "wms_order_devanning-order": "/wms/order/devanning-order";
+    "wms_order_driver-check-in-record": "/wms/order/driver-check-in-record";
+    "wms_order_import-inventory": "/wms/order/import-inventory";
+    "wms_order_inventory-data": "/wms/order/inventory-data";
+    "wms_order_inventory-data-dashboard": "/wms/order/inventory-data-dashboard";
+    "wms_order_outstock-data": "/wms/order/outstock-data";
+    "wms_order_outstock-exception": "/wms/order/outstock-exception";
+    "wms_order_park-management": "/wms/order/park-management";
+    "wms_order_park-scheduling": "/wms/order/park-scheduling";
+    "wms_order_warehouse-inventory-map": "/wms/order/warehouse-inventory-map";
     "wms_warehouse": "/wms/warehouse";
     "wms_warehouse_settings": "/wms/warehouse/settings";
     "wms_warehouse_settings_location": "/wms/warehouse/settings/location";
+    "wms_warehouse_settings_prelocation-exception-log": "/wms/warehouse/settings/prelocation-exception-log";
+    "wms_warehouse_settings_putaway-config": "/wms/warehouse/settings/putaway-config";
     "wms_warehouse_settings_warehouse-area": "/wms/warehouse/settings/warehouse-area";
   };
 
@@ -106,6 +121,7 @@ declare module "@elegant-router/types" {
     | "about"
     | "basic"
     | "demo"
+    | "driver-check-in"
     | "home"
     | "iframe-page"
     | "login"
@@ -135,6 +151,7 @@ declare module "@elegant-router/types" {
     | "403"
     | "404"
     | "500"
+    | "driver-check-in"
     | "iframe-page"
     | "login"
     | "social-callback"
@@ -165,7 +182,20 @@ declare module "@elegant-router/types" {
     | "wms_devanning-order"
     | "wms_inventory_location"
     | "wms_inventory_warehouse-area"
+    | "wms_order_cargo-inbound-plan"
+    | "wms_order_devanning-order"
+    | "wms_order_driver-check-in-record"
+    | "wms_order_import-inventory"
+    | "wms_order_inventory-data-dashboard"
+    | "wms_order_inventory-data"
+    | "wms_order_outstock-data"
+    | "wms_order_outstock-exception"
+    | "wms_order_park-management"
+    | "wms_order_park-scheduling"
+    | "wms_order_warehouse-inventory-map"
     | "wms_warehouse_settings_location"
+    | "wms_warehouse_settings_prelocation-exception-log"
+    | "wms_warehouse_settings_putaway-config"
     | "wms_warehouse_settings_warehouse-area"
   >;
 

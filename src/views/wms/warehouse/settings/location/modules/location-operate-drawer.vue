@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import type { SelectOption } from 'naive-ui';
 import { jsonClone } from '@sa/utils';
 import { useLoading } from '@sa/hooks';
 import { fetchCreateWarehouseLocation, fetchUpdateWarehouseLocation } from '@/service/api/wms/location';
+import { fetchGetWarehouseAreaList } from '@/service/api/wms/warehouse-area';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { useDict } from '@/hooks/business/dict';
 import { $t } from '@/locales';
@@ -45,10 +47,41 @@ type Model = Api.Wms.WarehouseLocationOperateParams;
 
 const model = ref<Model>(createDefaultModel());
 
+const areaOptions = ref<SelectOption[]>([]);
+const areaLoading = ref(false);
+
+const areaSelectOptions = computed<SelectOption[]>(() => {
+  const base = areaOptions.value;
+  const z = model.value.zoneCode;
+  if (z != null && String(z) !== '' && !base.some(o => o.value === z)) {
+    return [{ label: String(z), value: String(z) }, ...base];
+  }
+  return base;
+});
+
+async function loadWarehouseAreas() {
+  areaLoading.value = true;
+  const { data, error } = await fetchGetWarehouseAreaList({
+    pageNum: 1,
+    pageSize: 500,
+    orderByColumn: 'areaName',
+    isAsc: 'asc'
+  });
+  areaLoading.value = false;
+  if (error || !data?.rows) {
+    areaOptions.value = [];
+    return;
+  }
+  areaOptions.value = data.rows.map(row => ({
+    label: row.areaName,
+    value: row.areaName
+  }));
+}
+
 function createDefaultModel(): Model {
   return {
     id: undefined,
-    zoneCode: '',
+    zoneCode: null,
     locationCode: '',
     rowRank: null,
     columnRank: null,
@@ -68,7 +101,7 @@ function handleUpdateModelWhenEdit() {
   if (props.operateType === 'edit' && props.rowData) {
     model.value = jsonClone({
       id: props.rowData.id,
-      zoneCode: props.rowData.zoneCode ?? '',
+      zoneCode: props.rowData.zoneCode ?? null,
       locationCode: props.rowData.locationCode ?? '',
       rowRank: props.rowData.rowRank ?? null,
       columnRank: props.rowData.columnRank ?? null,
@@ -78,8 +111,9 @@ function handleUpdateModelWhenEdit() {
   }
 }
 
-watch(visible, () => {
+watch(visible, async () => {
   if (visible.value) {
+    await loadWarehouseAreas();
     handleUpdateModelWhenEdit();
     restoreValidation();
   }
@@ -103,16 +137,24 @@ async function handleSubmit() {
     <NDrawerContent :title="title" :native-scrollbar="false" closable>
       <NForm ref="formRef" :model="model" :rules="rules" label-placement="left" label-width="100">
         <NFormItem :label="$t('page.wms.inventory.location.zone')" path="zoneCode">
-          <NInput v-model:value="model.zoneCode" :placeholder="$t('page.wms.inventory.location.zone')" />
+          <NSelect
+            v-model:value="model.zoneCode"
+            class="w-full"
+            filterable
+            clearable
+            :loading="areaLoading"
+            :options="areaSelectOptions"
+            :placeholder="$t('page.wms.inventory.location.form.zoneSelectPlaceholder')"
+          />
         </NFormItem>
         <NFormItem :label="$t('page.wms.inventory.location.location')" path="locationCode">
           <NInput v-model:value="model.locationCode" :placeholder="$t('page.wms.inventory.location.location')" />
         </NFormItem>
         <NFormItem :label="$t('page.wms.inventory.location.rowRank')" path="rowRank">
-          <NInputNumber v-model:value="model.rowRank" class="w-full" clearable :min="0" />
+          <NInputNumber v-model:value="model.rowRank" class="w-full" clearable :min="1" :precision="0" />
         </NFormItem>
         <NFormItem :label="$t('page.wms.inventory.location.columnRank')" path="columnRank">
-          <NInputNumber v-model:value="model.columnRank" class="w-full" clearable :min="0" />
+          <NInputNumber v-model:value="model.columnRank" class="w-full" clearable :min="1" :precision="0" />
         </NFormItem>
         <NFormItem :label="$t('page.wms.inventory.location.capacity')" path="capacity">
           <NInputNumber v-model:value="model.capacity" class="w-full" clearable :min="0" />

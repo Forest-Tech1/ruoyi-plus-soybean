@@ -23,6 +23,12 @@ export type UseNaiveTableOptions<ResponseData, ApiData, Pagination extends boole
    * @returns true if the column is visible, false otherwise
    */
   getColumnVisible?: (column: NaiveUI.TableColumn<ApiData>) => boolean;
+  /**
+   * 列设置里「默认勾选」：false 表示首次进入表格时该列隐藏（用户仍可在列设置中打开）。
+   *
+   * @default true
+   */
+  getColumnDefaultChecked?: (column: NaiveUI.TableColumn<ApiData>) => boolean;
 };
 
 const SELECTION_KEY = '__selection__';
@@ -35,7 +41,7 @@ export function useNaiveTable<ResponseData, ApiData>(options: UseNaiveTableOptio
 
   const result = useTable<ResponseData, ApiData, NaiveUI.TableColumn<ApiData>, false>({
     ...options,
-    getColumnChecks: cols => getColumnChecks(cols, options.getColumnVisible),
+    getColumnChecks: cols => getColumnChecks(cols, options.getColumnVisible, options.getColumnDefaultChecked),
     getColumns
   });
 
@@ -70,6 +76,12 @@ type PaginationParams = Pick<PaginationProps, 'page' | 'pageSize'>;
 type UseNaivePaginatedTableOptions<ResponseData, ApiData> = UseNaiveTableOptions<ResponseData, ApiData, true> & {
   paginationProps?: Omit<PaginationProps, 'page' | 'pageSize' | 'itemCount'>;
   /**
+   * 分页器初始 `pageSize`（与列表请求参数默认值对齐；`paginationProps` 因类型省略不可传 `pageSize`）
+   *
+   * @default 10
+   */
+  initialPageSize?: number;
+  /**
    * whether to show the total count of the table
    *
    * @default true
@@ -90,20 +102,27 @@ export function useNaivePaginatedTable<ResponseData, ApiData>(
 
   const pagination = reactive({
     page: 1,
-    pageSize: 10,
+    pageSize: options.initialPageSize ?? 10,
     itemCount: 0,
     showSizePicker: true,
     pageSizes: [10, 15, 20, 25, 30],
-    prefix: showTotal.value ? page => $t('datatable.itemCount', { total: page.itemCount }) : undefined,
-    onUpdatePage(page) {
+    onUpdatePage(page: number) {
       pagination.page = page;
     },
-    onUpdatePageSize(pageSize) {
+    onUpdatePageSize(pageSize: number) {
       pagination.pageSize = pageSize;
       pagination.page = 1;
     },
     ...options.paginationProps
   }) as PaginationProps;
+
+  /**
+   * 必须使用 reactive 上的 `pagination.itemCount`（请求完成后由 `onFetched` 写入后端 total）。
+   * 不能使用 Naive 传给 `prefix(page)` 的 `page.itemCount`，否则会误用成当前页条数（例如始终显示「共 10 条」）。
+   */
+  if (showTotal.value) {
+    pagination.prefix = () => $t('datatable.itemCount', { total: pagination.itemCount });
+  }
 
   // this is for mobile, if the system does not support mobile, you can use `pagination` directly
   const mobilePagination = computed(() => {
@@ -128,7 +147,7 @@ export function useNaivePaginatedTable<ResponseData, ApiData>(
   const result = useTable<ResponseData, ApiData, NaiveUI.TableColumn<ApiData>, true>({
     ...options,
     pagination: true,
-    getColumnChecks: cols => getColumnChecks(cols, options.getColumnVisible),
+    getColumnChecks: cols => getColumnChecks(cols, options.getColumnVisible, options.getColumnDefaultChecked),
     getColumns,
     onFetched: data => {
       pagination.itemCount = data.total ?? 0;
@@ -238,12 +257,17 @@ export function useTableOperate<TableData>(
   };
 }
 
+/**
+ * 将列表接口结果规范为 `PaginationData`。
+ * 兼容 RuoYi `rows` + `total`、MyBatis-Plus `records` + `total`，
+ * 以及 `total` 与列表拆在 `data` 内、或 `total` 为字符串等常见情况，避免分页区只显示当前页条数。
+ */
 export function defaultTransform<ApiData>(
   response: FlatResponseData<any, Api.Common.PaginatingQueryRecord<ApiData>>
 ): PaginationData<ApiData> {
   const { data, error } = response;
 
-  if (error) {
+  if (error || data == null) {
     return {
       data: [],
       pageNum: 1,
@@ -251,12 +275,72 @@ export function defaultTransform<ApiData>(
     };
   }
 
-  const { rows: records, pageNum: current, total } = data ?? {};
+  /** 纯数组响应（少数接口把分页结果放在 data 根上） */
+  if (Array.isArray(data)) {
+    const list = data as ApiData[];
+    return {
+      data: list,
+      pageNum: 1,
+      total: list.length
+    };
+  }
+
+  const payload = data as unknown as Record<string, unknown>;
+
+  const nestedRaw = payload.data;
+  const nested =
+    nestedRaw != null && typeof nestedRaw === 'object' && !Array.isArray(nestedRaw)
+      ? (nestedRaw as Record<string, unknown>)
+      : null;
+
+  /** 兼容 rows 单条对象、records、list */
+  function extractRowsFromRecord(rec: Record<string, unknown>): ApiData[] {
+    const tryKey = (v: unknown): ApiData[] | null => {
+      if (v === undefined || v === null) return null;
+      if (Array.isArray(v)) return v as ApiData[];
+      if (typeof v === 'object' && !Array.isArray(v) && 'id' in (v as object)) return [v as ApiData];
+      return null;
+    };
+    return tryKey(rec.rows) ?? tryKey(rec.records) ?? tryKey(rec.list) ?? [];
+  }
+
+  const fromPayload = extractRowsFromRecord(payload);
+  const rowList = fromPayload.length > 0 ? fromPayload : nested ? extractRowsFromRecord(nested) : [];
+
+  const pageObj =
+    nested?.page != null && typeof nested.page === 'object' && !Array.isArray(nested.page)
+      ? (nested.page as Record<string, unknown>)
+      : null;
+
+  /**
+   * 汇总各层可能出现的 total，取 **最大值**。
+   * 常见误报：顶层 `total` 被写成当前页条数，真实总条数在 `data.total` / `Page` 里（如 69 vs 10）。
+   */
+  const totalCandidates = [
+    payload.total,
+    payload.totalCount,
+    nested?.total,
+    nested?.totalCount,
+    pageObj?.total,
+    pageObj?.totalCount
+  ]
+    .map(v => Number(v))
+    .filter(n => Number.isFinite(n) && n >= 0);
+
+  const total = totalCandidates.length ? Math.max(...totalCandidates) : 0;
+
+  const pageCandidate =
+    payload.pageNum ??
+    payload.current ??
+    nested?.pageNum ??
+    nested?.current;
+  const pageNumRaw = Number(pageCandidate);
+  const pageNum = Number.isFinite(pageNumRaw) && pageNumRaw > 0 ? pageNumRaw : 1;
 
   return {
-    data: Array.isArray(records) ? records : [],
-    pageNum: current ?? 1,
-    total: Number(total) || 0
+    data: rowList,
+    pageNum,
+    total
   };
 }
 
@@ -294,7 +378,7 @@ export function useNaiveTreeTable<ResponseData, ApiData>(options: UseNaiveTreeTa
       // return tree data for display
       return transformed.tree;
     },
-    getColumnChecks: cols => getColumnChecks(cols, options.getColumnVisible),
+    getColumnChecks: cols => getColumnChecks(cols, options.getColumnVisible, options.getColumnDefaultChecked),
     getColumns
   });
 
@@ -418,7 +502,8 @@ export function treeTransform<ApiData>(
 
 function getColumnChecks<Column extends NaiveUI.TableColumn<any>>(
   cols: Column[],
-  getColumnVisible?: (column: Column) => boolean
+  getColumnVisible?: (column: Column) => boolean,
+  getColumnDefaultChecked?: (column: Column) => boolean
 ) {
   const checks: TableColumnCheck[] = [];
 
@@ -427,7 +512,7 @@ function getColumnChecks<Column extends NaiveUI.TableColumn<any>>(
       checks.push({
         key: column.key as string,
         title: column.title!,
-        checked: true,
+        checked: getColumnDefaultChecked?.(column) ?? true,
         fixed: column.fixed ?? 'unFixed',
         visible: getColumnVisible?.(column) ?? true
       });
@@ -435,7 +520,7 @@ function getColumnChecks<Column extends NaiveUI.TableColumn<any>>(
       checks.push({
         key: SELECTION_KEY,
         title: $t('common.check'),
-        checked: true,
+        checked: getColumnDefaultChecked?.(column) ?? true,
         fixed: column.fixed ?? 'unFixed',
         visible: getColumnVisible?.(column) ?? false
       });
@@ -443,7 +528,7 @@ function getColumnChecks<Column extends NaiveUI.TableColumn<any>>(
       checks.push({
         key: EXPAND_KEY,
         title: $t('common.expandColumn'),
-        checked: true,
+        checked: getColumnDefaultChecked?.(column) ?? true,
         fixed: column.fixed ?? 'unFixed',
         visible: getColumnVisible?.(column) ?? false
       });

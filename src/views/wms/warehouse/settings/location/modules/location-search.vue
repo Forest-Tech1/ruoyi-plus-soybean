@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { h } from 'vue';
-import type { DropdownOption } from 'naive-ui';
+import { h, onMounted, ref } from 'vue';
+import type { DropdownOption, SelectOption } from 'naive-ui';
 import { NButton, NDropdown } from 'naive-ui';
 import { useNaiveForm } from '@/hooks/common/form';
 import { useAuth } from '@/hooks/business/auth';
 import { useDict } from '@/hooks/business/dict';
+import { fetchGetWarehouseAreaList } from '@/service/api/wms/warehouse-area';
 import { $t } from '@/locales';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 import DictSelect from '@/components/custom/dict-select.vue';
@@ -46,6 +47,32 @@ useDict('sys_normal_disable', true);
 
 const model = defineModel<Api.Wms.WarehouseLocationSearchParams>('model', { required: true });
 
+const areaOptions = ref<SelectOption[]>([]);
+const areaLoading = ref(false);
+
+async function loadWarehouseAreas() {
+  areaLoading.value = true;
+  const { data, error } = await fetchGetWarehouseAreaList({
+    pageNum: 1,
+    pageSize: 500,
+    orderByColumn: 'areaName',
+    isAsc: 'asc'
+  });
+  areaLoading.value = false;
+  if (!error && data?.rows) {
+    areaOptions.value = data.rows.map(row => ({
+      label: row.areaName,
+      value: row.areaName
+    }));
+  } else {
+    areaOptions.value = [];
+  }
+}
+
+onMounted(() => {
+  void loadWarehouseAreas();
+});
+
 const statusBatchOptions: DropdownOption[] = [
   {
     label: () => $t('page.wms.inventory.location.statusEnable'),
@@ -67,6 +94,8 @@ function handleStatusBatchSelect(key: string | number) {
 
 async function reset() {
   await restoreValidation();
+  model.value.zoneCode = null;
+  model.value.locationKeyword = null;
   model.value.keyword = null;
   model.value.status = null;
   emit('search');
@@ -119,11 +148,22 @@ async function search() {
     </template>
     <NForm ref="formRef" :model="model" label-placement="left" label-width="auto">
       <NGrid responsive="screen" item-responsive :cols="24" :x-gap="12" :y-gap="12">
-        <NFormItemGi span="24 m:12 l:8" :label="$t('page.wms.inventory.location.filterKeyword')">
-          <NInput
-            v-model:value="model.keyword"
+        <NFormItemGi span="24 m:12 l:8" :label="$t('page.wms.inventory.location.searchWarehouseArea')">
+          <NSelect
+            v-model:value="model.zoneCode"
+            class="w-full"
+            filterable
             clearable
-            :placeholder="$t('page.wms.inventory.location.filterPlaceholder')"
+            :loading="areaLoading"
+            :options="areaOptions"
+            :placeholder="$t('page.wms.inventory.location.searchWarehouseAreaPlaceholder')"
+          />
+        </NFormItemGi>
+        <NFormItemGi span="24 m:12 l:8" :label="$t('page.wms.inventory.location.searchLocationKeyword')">
+          <NInput
+            v-model:value="model.locationKeyword"
+            clearable
+            :placeholder="$t('page.wms.inventory.location.searchLocationKeywordPlaceholder')"
           />
         </NFormItemGi>
         <NFormItemGi span="24 m:12 l:8" :label="$t('page.wms.inventory.location.status')">

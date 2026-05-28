@@ -14,6 +14,7 @@ import {
   toggleAuxiliaryColorModes,
   toggleCssDarkMode
 } from './shared';
+import { readThemeActivePresetId, syncThemePresetHtmlClass } from '@/utils/theme-preset-html';
 
 /** Theme store */
 export const useThemeStore = defineStore(SetupStoreId.Theme, () => {
@@ -235,6 +236,8 @@ export const useThemeStore = defineStore(SetupStoreId.Theme, () => {
 
   // watch store
   scope.run(() => {
+    syncThemePresetHtmlClass(readThemeActivePresetId());
+
     // watch dark mode
     watch(
       darkMode,

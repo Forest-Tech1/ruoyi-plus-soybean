@@ -13,7 +13,6 @@ import { $t } from '@/locales';
 import DictTag from '@/components/custom/dict-tag.vue';
 import TableHeaderOperation from '@/components/advanced/table-header-operation.vue';
 import WarehouseAreaOperateDrawer from './modules/warehouse-area-operate-drawer.vue';
-import WarehouseAreaPutawayModal from './modules/warehouse-area-putaway-modal.vue';
 import WarehouseAreaSearch from './modules/warehouse-area-search.vue';
 
 defineOptions({
@@ -35,10 +34,6 @@ const searchParams = ref<Api.Wms.WarehouseAreaSearchParams>({
   orderByColumn: 'createTime',
   isAsc: 'desc'
 });
-
-const putawayVisible = ref(false);
-const putawayAreaId = ref<CommonType.IdType | null>(null);
-const putawayInitial = ref<string | null>(null);
 
 const operateKey = {
   edit: 'edit',
@@ -97,6 +92,24 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
         }
       },
       {
+        key: 'rowRank',
+        title: $t('page.wms.inventory.location.rowRank'),
+        align: 'center',
+        width: 80,
+        render(row) {
+          return row.rowRank != null ? String(row.rowRank) : '—';
+        }
+      },
+      {
+        key: 'columnRank',
+        title: $t('page.wms.inventory.location.columnRank'),
+        align: 'center',
+        width: 80,
+        render(row) {
+          return row.columnRank != null ? String(row.columnRank) : '—';
+        }
+      },
+      {
         key: 'locationMixedStorage',
         title: $t('page.wms.inventory.warehouseArea.locationMixedStorage'),
         align: 'center',
@@ -120,17 +133,6 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
         }
       },
       {
-        key: 'putawayCondition',
-        title: $t('page.wms.inventory.warehouseArea.putawayCondition'),
-        align: 'center',
-        minWidth: 120,
-        ellipsis: { tooltip: true },
-        render(row) {
-          const text = row.putawayCondition?.trim();
-          return text ? text : $t('page.wms.inventory.warehouseArea.putawayNotSet');
-        }
-      },
-      {
         key: 'createTime',
         title: $t('page.wms.inventory.warehouseArea.createTime'),
         align: 'center',
@@ -140,14 +142,8 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
         key: 'operate',
         title: $t('common.operate'),
         align: 'center',
-        width: 220,
+        width: 140,
         render: row => {
-          const putawayBtn = hasAuth('wms:warehouseArea:putaway') ? (
-            <NButton size="small" type="primary" secondary onClick={() => openPutaway(row)}>
-              {$t('page.wms.inventory.warehouseArea.editPutaway')}
-            </NButton>
-          ) : null;
-
           const dropdownOptions = [];
           if (hasAuth('wms:warehouseArea:edit')) {
             dropdownOptions.push({ key: operateKey.edit, label: $t('common.edit') });
@@ -184,8 +180,7 @@ const { columns, columnChecks, data, getData, getDataByPage, loading, mobilePagi
               </NDropdown>
             ) : null;
 
-          const nodes = [putawayBtn, moreBtn].filter(Boolean);
-          return <div class="flex-center flex-wrap gap-8px">{nodes}</div>;
+          return <div class="flex-center flex-wrap gap-8px">{moreBtn}</div>;
         }
       }
     ]
@@ -196,12 +191,6 @@ const { drawerVisible, operateType, editingData, handleAdd, handleEdit, checkedR
 
 function editArea(id: CommonType.IdType) {
   handleEdit(id);
-}
-
-function openPutaway(row: Api.Wms.WarehouseArea) {
-  putawayAreaId.value = row.id;
-  putawayInitial.value = row.putawayCondition ?? '';
-  putawayVisible.value = true;
 }
 
 async function handleDelete(id: CommonType.IdType) {
@@ -280,12 +269,6 @@ async function handleBatchDelete() {
       :operate-type="operateType"
       :row-data="editingData"
       @submitted="getDataByPage"
-    />
-    <WarehouseAreaPutawayModal
-      v-model:visible="putawayVisible"
-      :area-id="putawayAreaId"
-      :initial-remark="putawayInitial"
-      @submitted="getData"
     />
   </div>
 </template>

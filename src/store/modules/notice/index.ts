@@ -2,10 +2,17 @@ import { reactive } from 'vue';
 import { defineStore } from 'pinia';
 import { SetupStoreId } from '@/enum';
 
-interface NoticeItem {
+export type NoticeKind = 'generic' | 'driver_check_in';
+
+export interface NoticeItem {
+  kind?: NoticeKind;
+  /** Check-in 记录主键（`driver_check_in` 时用于跳转与已读） */
+  recordId?: CommonType.IdType;
+  coNo?: string;
+  driverPhone?: string;
   title?: string;
   read: boolean;
-  message: any;
+  message: string;
   time: string;
 }
 
@@ -15,20 +22,24 @@ export const useNoticeStore = defineStore(SetupStoreId.Notice, () => {
   });
 
   const addNotice = (notice: NoticeItem) => {
-    state.notices.push(notice);
+    state.notices.unshift(notice);
+    if (state.notices.length > 100) {
+      state.notices.length = 100;
+    }
   };
 
   const removeNotice = (notice: NoticeItem) => {
-    state.notices.splice(state.notices.indexOf(notice), 1);
+    const idx = state.notices.indexOf(notice);
+    if (idx >= 0) state.notices.splice(idx, 1);
   };
 
   const readNotice = (notice: NoticeItem) => {
-    state.notices[state.notices.indexOf(notice)].read = true;
+    const idx = state.notices.indexOf(notice);
+    if (idx >= 0) state.notices[idx].read = true;
   };
 
-  // 实现全部已读
   const readAll = () => {
-    state.notices.forEach((item: any) => {
+    state.notices.forEach(item => {
       item.read = true;
     });
   };
@@ -37,12 +48,19 @@ export const useNoticeStore = defineStore(SetupStoreId.Notice, () => {
     state.notices = [];
   };
 
+  const driverCheckInNotices = () =>
+    state.notices.filter(n => n.kind === 'driver_check_in');
+
+  const genericNotices = () => state.notices.filter(n => n.kind !== 'driver_check_in');
+
   return {
     state,
     addNotice,
     removeNotice,
     readNotice,
     readAll,
-    clearNotice
+    clearNotice,
+    driverCheckInNotices,
+    genericNotices
   };
 });

@@ -30,11 +30,50 @@ export const request = createFlatRequest(
         return response.data;
       }
 
-      if (response.data.rows) {
-        return response.data;
+      const body = response.data;
+
+      /** 分页结果在顶层带 TableDataInfo 结构 */
+      if (body.rows) {
+        return body;
       }
 
-      return response.data.data;
+      const inner = body.data;
+
+      if (inner == null) {
+        return inner;
+      }
+
+      if (Array.isArray(inner)) {
+        return inner;
+      }
+
+      if (typeof inner !== 'object') {
+        return inner;
+      }
+
+      const merged = { ...(inner as Record<string, unknown>) };
+
+      /** 分页常见：列表在 body.data 内，真实 total 在外层 body.total；只取内层会落到「共 10 条」无法翻页 */
+      const hasRows =
+        Array.isArray(merged.rows) ||
+        Array.isArray(merged.records) ||
+        Array.isArray(merged.list);
+
+      if (hasRows) {
+        const outer = body as Record<string, unknown>;
+        const totalNums = [
+          Number(outer.total),
+          Number(outer.totalCount),
+          Number(merged.total),
+          Number(merged.totalCount)
+        ].filter(n => Number.isFinite(n) && n >= 0);
+
+        if (totalNums.length > 0) {
+          merged.total = Math.max(...totalNums);
+        }
+      }
+
+      return merged;
     },
     async onRequest(config) {
       const isToken = config.headers?.isToken === false;
@@ -72,7 +111,9 @@ export const request = createFlatRequest(
         const decryptData = decryptWithAes(data, aesKey);
         response.data = JSON.parse(decryptData);
       }
-      return String(response.data.code) === import.meta.env.VITE_SERVICE_SUCCESS_CODE;
+      const code = String(response.data.code);
+      /** RuoYi `R.accepted()`：`code === 202`（如导入异步受理），仍为成功响应需走 transform */
+      return code === import.meta.env.VITE_SERVICE_SUCCESS_CODE || code === '202';
     },
     async onBackendFail(response, instance) {
       const authStore = useAuthStore();
