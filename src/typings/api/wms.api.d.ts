@@ -72,6 +72,8 @@ declare namespace Api {
       devanningSheetPrinted?: boolean | null;
       /** 卡板贴是否已导出/打印过（Word/ZIP 任一成功导出后置位，供列表「操作状态」次行） */
       palletLabelPrinted?: boolean | null;
+      /** 入库单是否已打印（供列表「操作状态」第三行） */
+      inboundReceiptPrinted?: boolean | null;
       /** 备注 */
       remark?: string;
     }>;
@@ -268,6 +270,27 @@ declare namespace Api {
         cargoPhase?: CargoInboundInventoryPhase | null;
       } & Api.Common.CommonSearchParams
     >;
+
+    /** 入库单打印 · 卡板行（GET print-data 响应） */
+    type DevanningInboundReceiptPrintRow = {
+      inboundPlanId?: CommonType.IdType;
+      systemSoNo?: string | null;
+      palletSeq: number;
+      warehouseCodeLabel: string;
+      recommendedLocation?: string | null;
+      actualLocation?: null;
+      boxCount?: null;
+    };
+
+    /** 入库单打印数据 @see docs/wms-inbound-receipt-print-api.md */
+    type DevanningInboundReceiptPrintData = {
+      orderId: CommonType.IdType;
+      coNo: string;
+      printDate: string;
+      qrContent: string;
+      rows: DevanningInboundReceiptPrintRow[];
+      totalPalletCount?: number;
+    };
 
     /** 拆柜订单 - 入库计划行（详情 Tab 分页列表） */
     type DevanningInboundPlan = Api.Common.CommonRecord<{

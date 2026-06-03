@@ -252,3 +252,19 @@ export function fetchGetDevanningImportInventoryList(params?: Api.Wms.DevanningI
     params
   });
 }
+
+/** 入库单打印数据 @see docs/wms-inbound-receipt-print-api.md */
+export function fetchGetDevanningInboundReceiptPrintData(orderId: CommonType.IdType) {
+  return request<Api.Wms.DevanningInboundReceiptPrintData>({
+    url: `/wms/devanning-order/${orderId}/inbound-receipt/print-data`,
+    method: 'get'
+  });
+}
+
+/** 入库单打印成功后置位「入库单已打」 */
+export function fetchMarkDevanningInboundReceiptPrinted(orderId: CommonType.IdType) {
+  return request<boolean>({
+    url: `/wms/devanning-order/${orderId}/inbound-receipt/mark-printed`,
+    method: 'put'
+  });
+}

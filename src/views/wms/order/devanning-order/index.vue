@@ -40,6 +40,7 @@ import DevanningOrderRemarkModal from './modules/devanning-order-remark-modal.vu
 import DevanningOrderOperateDrawer from './modules/devanning-order-operate-drawer.vue';
 import DevanningOrderSearch from './modules/devanning-order-search.vue';
 import DevanningOrderAttachmentsModal from './modules/devanning-order-attachments-modal.vue';
+import DevanningOrderInboundReceiptPrintModal from './modules/devanning-order-inbound-receipt-print-modal.vue';
 import { getDevanningOrderAttachmentCount } from './modules/devanning-order-attachment-utils';
 
 defineOptions({
@@ -173,7 +174,8 @@ function isDevanningPrintFlag(v: unknown): boolean {
 function renderOperationStatusCell(row: Api.Wms.DevanningOrder) {
   const sheet = isDevanningPrintFlag(row.devanningSheetPrinted);
   const pallet = isDevanningPrintFlag(row.palletLabelPrinted);
-  if (!sheet && !pallet) {
+  const inboundReceipt = isDevanningPrintFlag(row.inboundReceiptPrinted);
+  if (!sheet && !pallet && !inboundReceipt) {
     return <span class="text-13px text-gray-400">—</span>;
   }
   return (
@@ -183,6 +185,9 @@ function renderOperationStatusCell(row: Api.Wms.DevanningOrder) {
       </div>
       <div class="min-h-[17px] whitespace-nowrap">
         {pallet ? $t('page.wms.devanningOrder.operationStatusPalletLabelPrinted') : ''}
+      </div>
+      <div class="min-h-[17px] whitespace-nowrap">
+        {inboundReceipt ? $t('page.wms.devanningOrder.operationStatusInboundReceiptPrinted') : ''}
       </div>
     </div>
   );
@@ -218,6 +223,18 @@ const editCell = ref<string | null>(null);
 
 const attachmentsVisible = ref(false);
 const attachmentsOrder = ref<Api.Wms.DevanningOrder | null>(null);
+
+const inboundReceiptPrintVisible = ref(false);
+const inboundReceiptPrintOrder = ref<Api.Wms.DevanningOrder | null>(null);
+
+function openInboundReceiptPrint(row: Api.Wms.DevanningOrder) {
+  inboundReceiptPrintOrder.value = row;
+  inboundReceiptPrintVisible.value = true;
+}
+
+function onInboundReceiptPrinted() {
+  void getData();
+}
 
 function openAttachments(row: Api.Wms.DevanningOrder) {
   attachmentsOrder.value = row;
@@ -323,6 +340,16 @@ function buildRowDropdownOptions(row: Api.Wms.DevanningOrder): DropdownOption[] 
       label: $t('page.wms.devanningOrder.exportCargoOrders'),
       key: 'exportCargoOrders',
       icon: () => h(SvgIcon, { icon: 'material-symbols:inventory-2-outline', class: 'text-18px' })
+    });
+  }
+  if (
+    hasAuth('wms:devanningOrder:inboundReceipt') ||
+    hasAuth('wms:devanningOrder:export')
+  ) {
+    opts.push({
+      label: $t('page.wms.devanningOrder.inboundReceipt.exportMenu'),
+      key: 'inbound-receipt',
+      icon: () => h(SvgIcon, { icon: 'material-symbols:print-outline', class: 'text-18px' })
     });
   }
   if (hasAuth('wms:devanningOrder:palletLabel') || hasAuth('wms:devanningOrder:export')) {
@@ -1263,6 +1290,9 @@ function handleRowMenuSelect(key: string | number, row: Api.Wms.DevanningOrder) 
     case 'exportCargoOrders':
       handleExportCargoOrdersForRow(row);
       break;
+    case 'inbound-receipt':
+      openInboundReceiptPrint(row);
+      break;
     case 'pallet-docx':
       handlePalletLabelsDocx(row);
       break;
@@ -1433,6 +1463,12 @@ function onCreateSubmitted() {
       :order-id="attachmentsOrder?.id ?? null"
       :co-no="attachmentsOrder?.coNo ?? null"
       :attachment-oss-ids="attachmentsOrder?.attachmentOssIds ?? null"
+    />
+    <DevanningOrderInboundReceiptPrintModal
+      v-model:visible="inboundReceiptPrintVisible"
+      :order-id="inboundReceiptPrintOrder?.id ?? null"
+      :co-no="inboundReceiptPrintOrder?.coNo ?? null"
+      @printed="onInboundReceiptPrinted"
     />
     <DevanningOrderDetailDrawer
       v-model:visible="detailVisible"

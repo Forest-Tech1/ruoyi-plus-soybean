@@ -1180,6 +1180,22 @@ declare namespace App {
             operationStatusColumn: string;
             operationStatusDevanningSheetPrinted: string;
             operationStatusPalletLabelPrinted: string;
+            operationStatusInboundReceiptPrinted: string;
+            inboundReceipt: {
+              title: string;
+              modalTitle: string;
+              exportMenu: string;
+              warehouseCode: string;
+              recommendedLocation: string;
+              actualLocation: string;
+              boxCount: string;
+              emptyRow: string;
+              emptyPreview: string;
+              print: string;
+              printFailed: string;
+              loadFailed: string;
+              noPallets: string;
+            };
             devanningCompleteTime: string;
             expectedDevanningTime: string;
             inboundWarehouse: string;
